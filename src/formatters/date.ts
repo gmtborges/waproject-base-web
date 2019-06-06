@@ -1,16 +1,23 @@
-import { DateTime } from 'luxon';
+import dateFnsFormat from 'date-fns/format';
+import dateFnsIsValid from 'date-fns/isValid';
+import locale from 'date-fns/locale/pt-BR';
+import dateFnsParse from 'date-fns/parse';
 
-export function dateParse(value: any, format?: string): Date {
+export function dateParse(value: any, format: string = 'yyyy-MM-dd HH:mm:ss'): Date {
   if (!value) return value;
-  if (value instanceof Date) return value;
+  if (typeof value !== 'string') return value;
 
-  const date = format ?
-    DateTime.fromFormat(value, format) :
-    DateTime.fromISO(value);
+  value = value.replace(/\+.+/gi, '').replace(/\..+$/gi, '');
+  const date = !format ? new Date(value) : dateFnsParse(value, format, new Date(), { locale });
+  if (!dateFnsIsValid(date)) return value;
 
-  return date.toJSDate();
+  return date;
 }
 
-export function dateFormat(date: Date, format: string = 'D'): string {
-  return DateTime.fromJSDate(date).toFormat(format);
+export function dateFormat(date: Date, format: string = 'dd/MM/yyyy'): string {
+  return dateFnsFormat(date, format, { locale });
+}
+
+export function removeTime(date: Date): Date {
+  return dateParse(dateFormat(date, 'yyyy-MM-dd'), 'yyyy-MM-dd');
 }

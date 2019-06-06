@@ -1,4 +1,5 @@
-import { TableCell, TableRow } from '@material-ui/core';
+import TableCell from '@material-ui/core/TableCell';
+import TableRow from '@material-ui/core/TableRow';
 import ListItemComponent, { IStateListItem } from 'components/Abstract/ListItem';
 import Alert from 'components/Shared/Alert';
 import { IOption } from 'components/Shared/DropdownMenu';

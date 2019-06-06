@@ -14,10 +14,9 @@ interface IProps {
 export const RouterContext = React.createContext<() => AppRouter>(null);
 
 export default class AppRouter extends React.PureComponent<IProps> {
+  browserRouter: RouteComponentProps<any>;
   private listenUnregister: Function;
   private location$: rxjs.ReplaySubject<Location>;
-
-  browserRouter: RouteComponentProps<any>;
 
   constructor(props: IProps) {
     super(props);

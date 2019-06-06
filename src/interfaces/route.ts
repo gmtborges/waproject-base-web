@@ -1,4 +1,4 @@
-import { MdiReactIconComponentType } from 'mdi-react';
+import { MdiReactIconComponentType } from 'mdi-react/';
 import { ComponentClass } from 'react';
 
 export interface IAppRoute {

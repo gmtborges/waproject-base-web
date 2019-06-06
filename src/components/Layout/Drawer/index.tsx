@@ -1,8 +1,8 @@
-import { List } from '@material-ui/core';
+import List from '@material-ui/core/List';
 import { darken } from '@material-ui/core/styles/colorManipulator';
+import logo from 'assets/images/logo-white.png';
 import AppRouter, { RouterContext } from 'components/Router';
 import { WithStyles } from 'decorators/withStyles';
-import { DeepReadonly } from 'helpers/immutable';
 import { IAppRoute } from 'interfaces/route';
 import { IUserToken } from 'interfaces/userToken';
 import React, { PureComponent } from 'react';
@@ -14,7 +14,7 @@ import { IAppRouteParsed, routeParser } from './routeParser';
 import AppDrawerUser from './UserMenu';
 
 interface IState {
-  user?: DeepReadonly<IUserToken>;
+  user?: IUserToken;
   routes: IAppRouteParsed[];
 }
 
@@ -93,7 +93,7 @@ export default class AppDrawer extends PureComponent<IProps, IState> {
         </DrawerContext.Consumer>
 
         <div className={classes.header}>
-          <img src={require('assets/images/logo-white.png')} className={classes.logo} />
+          <img src={logo} className={classes.logo} alt='logo' />
           <AppDrawerUser user={user} />
         </div>
 

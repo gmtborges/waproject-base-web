@@ -1,7 +1,9 @@
-import { Dialog, Slide } from '@material-ui/core';
+import Dialog from '@material-ui/core/Dialog';
+import Slide from '@material-ui/core/Slide';
+import logo from 'assets/images/logo-white.png';
 import { WithStyles } from 'decorators/withStyles';
-import { PureComponent } from 'react';
 import * as React from 'react';
+import { PureComponent } from 'react';
 import SwipeableViews from 'react-swipeable-views';
 import * as rxjsOperators from 'rxjs-operators';
 import authService from 'services/auth';
@@ -86,7 +88,7 @@ export default class LoginDialog extends PureComponent<IProps, IState> {
           <div className={classes.container}>
 
             <div className={classes.logo}>
-              <img src={require('assets/images/logo-white.png')} className={classes.logoImage} />
+              <img src={logo} alt='logo' className={classes.logoImage} />
             </div>
 
             <SwipeableViews index={currentView}>

@@ -1,3 +1,4 @@
+/* eslint-disable indent */
 export function errorMessageFormatter(err: any): string {
   if (typeof err === 'string') {
     return err;
@@ -16,7 +17,7 @@ export function errorMessageFormatter(err: any): string {
     case 'NETWORK_ERROR':
       return 'Sem conexão com a internet';
     case 'api-error':
-      if (err.status == -1) {
+      if (err.status === -1) {
         return 'Não conseguimos se comunicar com o servidor';
       }
 

@@ -1,4 +1,5 @@
-import { Button, CircularProgress } from '@material-ui/core';
+import Button from '@material-ui/core/Button';
+import CircularProgress from '@material-ui/core/CircularProgress';
 import IconMessage from 'components/Shared/IconMessage';
 import Snackbar from 'components/Shared/Snackbar';
 import { WithStyles } from 'decorators/withStyles';
@@ -6,7 +7,7 @@ import FolderDownloadIcon from 'mdi-react/FolderDownloadIcon';
 import FolderOpenIcon from 'mdi-react/FolderOpenIcon';
 import React, { DragEvent, Fragment, PureComponent } from 'react';
 
-export interface ImageReaderResult {
+export interface IImageReaderResult {
   url: string;
   width: number;
   height: number;
@@ -20,7 +21,7 @@ interface IState {
 interface IProps {
   droppable?: boolean;
   className?: string;
-  onLoad: (result: ImageReaderResult) => void;
+  onLoad: (result: IImageReaderResult) => void;
   classes?: any;
 }
 
@@ -100,7 +101,7 @@ export default class ImageReader extends PureComponent<IProps, IState> {
 
     const reader = new FileReader();
 
-    reader.onload = e => this.getImageDimensions(e.target.result);
+    reader.onload = (e: any) => this.getImageDimensions(e.target.result);
     reader.onerror = () => {
       Snackbar.show('Não conseguimos carregar a imagem');
       this.setState({ loading: false });

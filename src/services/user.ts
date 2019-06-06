@@ -1,9 +1,8 @@
-import { DeepReadonly } from 'helpers/immutable';
 import { IPaginationParams, IPaginationResponse } from 'interfaces/pagination';
 import { IUser } from 'interfaces/user';
 import { IUserRole } from 'interfaces/userRole';
 import * as rxjs from 'rxjs';
-import rxjsOperators from 'rxjs-operators';
+import RxOp, { ICacheResult } from 'rxjs-operators';
 
 import apiService, { ApiService } from './api';
 
@@ -14,9 +13,9 @@ export class UserService {
     return this.apiService.get('/user', params);
   }
 
-  public roles(refresh: boolean = false): rxjs.Observable<DeepReadonly<IUserRole[]>> {
+  public roles(refresh: boolean = false): rxjs.Observable<ICacheResult<IUserRole[]>> {
     return this.apiService.get('/user/roles').pipe(
-      rxjsOperators.cache('user-service-roles', { refresh })
+      RxOp.cache('user-service-roles', { refresh })
     );
   }
 

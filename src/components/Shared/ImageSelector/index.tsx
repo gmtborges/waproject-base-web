@@ -1,13 +1,21 @@
-import { Button, Dialog, DialogActions, DialogContent, DialogTitle, Grid, Slide, Typography } from '@material-ui/core';
+import Button from '@material-ui/core/Button';
+import Dialog from '@material-ui/core/Dialog';
+import DialogActions from '@material-ui/core/DialogActions';
+import DialogContent from '@material-ui/core/DialogContent';
+import DialogTitle from '@material-ui/core/DialogTitle';
+import Grid from '@material-ui/core/Grid';
+import Slide from '@material-ui/core/Slide';
+import Typography from '@material-ui/core/Typography';
+import transparency from 'assets/images/transparency.png';
 import { WithStyles } from 'decorators/withStyles';
 import imageCompress from 'helpers/imagerCompress';
 import React, { Fragment, PureComponent } from 'react';
 import { Cropper } from 'react-image-cropper';
 
-import ImageReader, { ImageReaderResult } from './ImageReader';
+import ImageReader, { IImageReaderResult } from './ImageReader';
 
 interface IState {
-  image?: ImageReaderResult;
+  image?: IImageReaderResult;
   dimentions?: { width: number, height: number };
 }
 
@@ -21,7 +29,7 @@ interface IProps {
 
 @WithStyles({
   imageContainer: {
-    background: `url('${require('assets/images/transparency.png')}') repeat`,
+    background: `url('${transparency}') repeat`,
     boxShadow: '5px 5px 10px #00000040',
     margin: 'auto'
   },
@@ -64,7 +72,7 @@ export default class ImageSelector extends PureComponent<IProps, IState> {
     this.props.onComplete(null);
   }
 
-  setImage = (image: ImageReaderResult) => {
+  setImage = (image: IImageReaderResult) => {
     this.setState({ image: null });
 
     const dimentions = this.calculateRegion(image.width, image.height);

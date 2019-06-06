@@ -1,9 +1,21 @@
-import commonMasks from '@react-form-fields/core/mask/common/pt-br';
-import validationMessage from '@react-form-fields/core/validator/custom-languages/pt-br';
-import { setConfig } from '@react-form-fields/material-ui/config';
+import ConfigBuilder from '@react-form-fields/material-ui/config/builder';
+import lang from '@react-form-fields/material-ui/lang/pt-br';
 
-setConfig({
-  masks: commonMasks,
-  dateLocale: 'pt',
-  validation: validationMessage
-});
+const fieldConfig = new ConfigBuilder()
+  .fromLang(lang)
+  .setValidationOn('onSubmit')
+  .setTrumbowygConfig({
+    btns: [
+      'viewHTML', ['h1', 'h2'],
+      ['bold', 'italic', 'underline'],
+      ['superscript', 'subscript'],
+      ['link', 'insertImage'],
+      'btnGrp-justify',
+      'btnGrp-lists', ['horizontalRule'],
+      ['removeformat'],
+      ['fullscreen']
+    ]
+  })
+  .build();
+
+export default fieldConfig;

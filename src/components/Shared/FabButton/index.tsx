@@ -1,6 +1,7 @@
-import { Button, Tooltip } from '@material-ui/core';
+import Button from '@material-ui/core/Button';
+import Tooltip from '@material-ui/core/Tooltip';
 import { WithStyles } from 'decorators/withStyles';
-import { MdiReactIconComponentType } from 'mdi-react';
+import { MdiReactIconComponentType } from 'mdi-react/';
 import React, { PureComponent } from 'react';
 
 interface IProps {

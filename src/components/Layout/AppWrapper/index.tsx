@@ -1,4 +1,5 @@
-import { Drawer, Hidden } from '@material-ui/core';
+import Drawer from '@material-ui/core/Drawer';
+import Hidden from '@material-ui/core/Hidden';
 import { WithStyles } from 'decorators/withStyles';
 import { IAppRoute } from 'interfaces/route';
 import React, { PureComponent } from 'react';
@@ -45,7 +46,7 @@ export const ScrollTopContext = React.createContext<Function>((() => { }));
   }
 }))
 export default class AppWrapper extends PureComponent<IProps, IState> {
-  mainContent: HTMLMainElement;
+  mainContent: React.RefObject<HTMLDivElement> = React.createRef();
   drawerContext: IDrawerContext;
 
   constructor(props: IProps) {
@@ -59,7 +60,7 @@ export default class AppWrapper extends PureComponent<IProps, IState> {
   }
 
   scrollTop = () => {
-    setTimeout(() => this.mainContent.scrollTo(0, 0), 100);
+    setTimeout(() => this.mainContent.current.scrollTo(0, 0), 100);
   }
 
   openDrawer = () => {
@@ -98,7 +99,7 @@ export default class AppWrapper extends PureComponent<IProps, IState> {
             </Drawer>
           </Hidden>
           <ScrollTopContext.Provider value={this.scrollTop}>
-            <main ref={ref => this.mainContent = ref} className={classes.content}>
+            <main ref={this.mainContent} className={classes.content}>
               {children}
             </main>
           </ScrollTopContext.Provider>

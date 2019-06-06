@@ -1,83 +1,124 @@
-import axios, { AxiosError, AxiosResponse } from 'axios';
-import * as rxjs from 'rxjs';
-import * as rxjsOperators from 'rxjs/operators';
+import axios, { AxiosError, AxiosResponse, Method } from 'axios';
+import { ApiError } from 'errors/api';
+import { apiRequestFormatter } from 'formatters/apiRequest';
+import * as Rx from 'rxjs';
+import * as RxOp from 'rxjs/operators';
 
-import { ApiError } from '../errors/api';
 import { API_ENDPOINT } from '../settings';
+import { apiResponseFormatter } from './../formatters/apiResponse';
 import authService from './auth';
-import logService, { LogService } from './log';
 import tokenService, { TokenService } from './token';
 
 export class ApiService {
   constructor(
     private apiEndpoint: string,
-    private logService: LogService,
     private tokenService: TokenService
   ) { }
 
-  public get<T = any>(url: string, params?: any): rxjs.Observable<T> {
-    return this.request('GET', url, params);
+  public get<T = any>(url: string, params?: any): Rx.Observable<T> {
+    return this.request<T>('GET', url, params).pipe(
+      RxOp.map(({ response }) => response),
+      RxOp.filter(response => response !== undefined)
+    );
   }
 
-  public post<T = any>(url: string, body: any): rxjs.Observable<T> {
-    return this.request('POST', url, body);
+  public post<T = any>(url: string, body: any): Rx.Observable<T> {
+    return this.request<T>('POST', url, body).pipe(
+      RxOp.map(({ response }) => response),
+      RxOp.filter(response => response !== undefined)
+    );
   }
 
-  public delete<T = any>(url: string, params?: any): rxjs.Observable<T> {
-    return this.request('DELETE', url, params);
+  public put<T = any>(url: string, body: any): Rx.Observable<T> {
+    return this.request<T>('PUT', url, body).pipe(
+      RxOp.map(({ response }) => response),
+      RxOp.filter(response => response !== undefined)
+    );
   }
 
-  private request<T>(method: string, url: string, data: any = null, retry: boolean = true): rxjs.Observable<T> {
+  public delete<T = any>(url: string, params?: any): Rx.Observable<T> {
+    return this.request<T>('DELETE', url, params).pipe(
+      RxOp.map(({ response }) => response),
+      RxOp.filter(response => response !== undefined)
+    );
+  }
+
+  public upload<T = any>(url: string, data: FormData) {
+    return this.request<T>('POST', url, data);
+  }
+
+  private request<T = any>(
+    method: Method,
+    url: string,
+    data: any = null,
+    retry: boolean = true
+  ): Rx.Observable<{ response: T, progress: number }> {
+    const progress$ = new Rx.BehaviorSubject(0);
+
     return this.tokenService.getToken().pipe(
-      rxjsOperators.first(),
-      rxjsOperators.map(token => token ? { Authorization: `bearer ${token}` } : null),
-      rxjsOperators.switchMap(headers => {
+      RxOp.first(),
+      RxOp.map(token => {
+        if (!token) return {};
+        return { Authorization: `Bearer ${token}` };
+      }),
+      RxOp.switchMap(headers => {
         return axios.request({
           baseURL: this.apiEndpoint,
           url,
           method,
-          timeout: 30000,
           headers: {
-            'Content-type': 'application/json',
-            ...headers
+            ...headers,
+            'Content-Type': data instanceof FormData ?
+              'multipart/form-data' :
+              'application/json'
           },
-          params: method === 'GET' ? data : null,
-          data: method === 'POST' ? data : null
+          params: method === 'GET' ? apiRequestFormatter(data) : null,
+          data: method === 'POST' || method === 'PUT' ? apiRequestFormatter(data) : null,
+          onUploadProgress: (progress: ProgressEvent) => {
+            const result = progress.loaded / progress.total;
+            progress$.next(result * 100);
+          }
         });
       }),
-      rxjsOperators.switchMap(res => this.checkNewToken(res)),
-      rxjsOperators.map(res => res.data),
-      rxjsOperators.catchError(err => this.handleError(err, retry))
+      RxOp.tap(() => progress$.next(100)),
+      RxOp.switchMap(res => this.checkNewToken(res)),
+      RxOp.map(res => apiResponseFormatter<T>(res.data) || null),
+      RxOp.startWith(undefined),
+      RxOp.combineLatest(
+        progress$.pipe(RxOp.distinctUntilChanged()),
+        (response, progress) => ({ response, progress })
+      ),
+      RxOp.catchError(err => {
+        progress$.complete();
+        return this.handleError(err, retry);
+      }),
     );
   }
 
-  private checkNewToken(response: AxiosResponse): rxjs.Observable<AxiosResponse> {
+  private checkNewToken(response: AxiosResponse): Rx.Observable<AxiosResponse> {
     const token = response.headers['x-token'];
 
     if (!token) {
-      return rxjs.of(response);
+      return Rx.of(response);
     }
 
-    this.logService.breadcrumb('Api New Token', 'manual', token);
-
     return this.tokenService.setToken(token).pipe(
-      rxjsOperators.map(() => response)
+      RxOp.map(() => response)
     );
   }
-
   private handleError(err: AxiosError, retry: boolean) {
-    if (!err.config) return rxjs.throwError(err);
+    if (!err.config || !err.response) return Rx.throwError(err);
 
     if (err.response.status !== 401 || !retry) {
-      return rxjs.throwError(new ApiError(err.config, err.response, err));
+      return Rx.throwError(new ApiError(err.config, err.response, err));
     }
 
     authService.openLogin();
     return authService.getUser().pipe(
-      rxjsOperators.skip(1),
-      rxjsOperators.switchMap(user => {
+      RxOp.skip(1),
+      RxOp.switchMap(user => {
         if (!user) {
-          return rxjs.throwError(new ApiError(err.config, err.response, err));
+          return Rx.throwError(new ApiError(err.config, err.response, err));
         }
 
         return this.request(
@@ -92,7 +133,5 @@ export class ApiService {
 
 }
 
-const apiService = new ApiService(API_ENDPOINT, logService, tokenService);
-export const publicApiService = new ApiService(API_ENDPOINT, logService, tokenService);
-
+const apiService = new ApiService(API_ENDPOINT, tokenService);
 export default apiService;

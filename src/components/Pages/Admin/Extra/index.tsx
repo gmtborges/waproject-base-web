@@ -1,4 +1,8 @@
-import { Button, Card, CardActions, CardContent, Typography } from '@material-ui/core';
+import Button from '@material-ui/core/Button';
+import Card from '@material-ui/core/Card';
+import CardActions from '@material-ui/core/CardActions';
+import CardContent from '@material-ui/core/CardContent';
+import Typography from '@material-ui/core/Typography';
 import Toolbar from 'components/Layout/Toolbar';
 import ImageSelector from 'components/Shared/ImageSelector';
 import { WithStyles } from 'decorators/withStyles';
@@ -57,7 +61,7 @@ export default class ExtraIndexPage extends PureComponent<IProps, IState> {
         <Card>
           <CardContent>
             <Typography variant='subheading' gutterBottom>Image Cropper + Compressor</Typography>
-            {!!image && <img className={classes.img} src={image} />}
+            {!!image && <img className={classes.img} src={image} alt='cropper' />}
           </CardContent>
           <CardActions className={classes.cardActions}>
             <Button onClick={this.openSelector} variant='raised' color='secondary'>

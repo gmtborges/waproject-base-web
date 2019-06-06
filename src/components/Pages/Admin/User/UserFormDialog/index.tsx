@@ -1,22 +1,23 @@
-import {
-  Button,
-  Dialog,
-  DialogActions,
-  DialogContent,
-  DialogTitle,
-  LinearProgress,
-  Slide,
-  Typography,
-} from '@material-ui/core';
-import { CustomMessage, FieldCheckbox, FieldHidden, FieldText, ValidationContext } from '@react-form-fields/material-ui';
+import Button from '@material-ui/core/Button';
+import Dialog from '@material-ui/core/Dialog';
+import DialogActions from '@material-ui/core/DialogActions';
+import DialogContent from '@material-ui/core/DialogContent';
+import DialogTitle from '@material-ui/core/DialogTitle';
+import LinearProgress from '@material-ui/core/LinearProgress';
+import Slide from '@material-ui/core/Slide';
+import Typography from '@material-ui/core/Typography';
+import FieldCheckbox from '@react-form-fields/material-ui/components/Checkbox';
+import CustomMessage from '@react-form-fields/material-ui/components/CustomMessage';
+import FormValidation from '@react-form-fields/material-ui/components/FormValidation';
+import FieldHidden from '@react-form-fields/material-ui/components/Hidden';
+import FieldText from '@react-form-fields/material-ui/components/Text';
 import { FormComponent, IStateForm } from 'components/Abstract/Form';
 import ErrorMessage from 'components/Shared/ErrorMessage';
 import Snackbar from 'components/Shared/Snackbar';
 import { WithStyles } from 'decorators/withStyles';
-import { makeWritable } from 'helpers/immutable';
 import { IUser } from 'interfaces/user';
 import { IUserRole } from 'interfaces/userRole';
-import React, { FormEvent, Fragment } from 'react';
+import React, { Fragment } from 'react';
 import rxjsOperators from 'rxjs-operators';
 import userService from 'services/user';
 
@@ -78,11 +79,11 @@ export default class UserFormDialog extends FormComponent<IProps, IState> {
     userService.roles().pipe(
       rxjsOperators.logError(),
       rxjsOperators.bindComponent(this)
-    ).subscribe(roles => {
+    ).subscribe(({ data }) => {
       const { user } = this.props;
 
       this.setState({
-        roles: makeWritable(roles).map(r => ({ ...r, selected: !user ? false : user.roles.includes(r.role) })),
+        roles: data.map(r => ({ ...r, selected: !user ? false : user.roles.includes(r.role) })),
         loading: false
       });
     }, error => {
@@ -90,13 +91,11 @@ export default class UserFormDialog extends FormComponent<IProps, IState> {
     });
   }
 
-  onSubmit = (event: FormEvent) => {
-    event.preventDefault();
-
+  onSubmit = (isValid: boolean) => {
     const { model, roles } = this.state;
     const { onComplete } = this.props;
 
-    if (!this.isFormValid()) return;
+    if (!isValid) return;
 
     this.setState({ loading: true });
     model.roles = roles.filter(r => r.selected).map(r => r.role);
@@ -130,75 +129,73 @@ export default class UserFormDialog extends FormComponent<IProps, IState> {
 
         {loading && <LinearProgress color='secondary' />}
 
-        <form onSubmit={this.onSubmit} noValidate>
-          <ValidationContext ref={this.bindValidationContext}>
-            <DialogTitle>{this.isEdit ? 'Editar' : 'Novo'} Usuário</DialogTitle>
-            <DialogContent className={classes.content}>
-              {error &&
-                <ErrorMessage error={error} tryAgain={this.loadData} />
-              }
+        <FormValidation onSubmit={this.onSubmit}>
+          <DialogTitle>{this.isEdit ? 'Editar' : 'Novo'} Usuário</DialogTitle>
+          <DialogContent className={classes.content}>
+            {error &&
+              <ErrorMessage error={error} tryAgain={this.loadData} />
+            }
 
-              {!error &&
-                <Fragment>
-                  <FieldText
-                    label='Nome'
-                    disabled={loading}
-                    value={model.firstName}
-                    validation='required|min:3|max:50'
-                    onChange={this.updateModel((model, v) => model.firstName = v)}
-                  />
+            {!error &&
+              <Fragment>
+                <FieldText
+                  label='Nome'
+                  disabled={loading}
+                  value={model.firstName}
+                  validation='required|min:3|max:50'
+                  onChange={this.updateModel((model, v) => model.firstName = v)}
+                />
 
-                  <FieldText
-                    label='Sobrenome'
-                    disabled={loading}
-                    value={model.lastName}
-                    validation='string|min:3|max:50'
-                    onChange={this.updateModel((model, v) => model.lastName = v)}
-                  />
+                <FieldText
+                  label='Sobrenome'
+                  disabled={loading}
+                  value={model.lastName}
+                  validation='string|min:3|max:50'
+                  onChange={this.updateModel((model, v) => model.lastName = v)}
+                />
 
-                  <FieldText
-                    label='Email'
-                    type='email'
-                    disabled={loading}
-                    value={model.email}
-                    validation='required|email|max:150'
-                    onChange={this.updateModel((model, v) => model.email = v)}
-                  />
+                <FieldText
+                  label='Email'
+                  type='email'
+                  disabled={loading}
+                  value={model.email}
+                  validation='required|email|max:150'
+                  onChange={this.updateModel((model, v) => model.email = v)}
+                />
 
-                  <Typography variant='subheading' className={classes.heading}>
-                    Acesso
-                  </Typography>
+                <Typography variant='subheading' className={classes.heading}>
+                  Acesso
+                </Typography>
 
-                  <FieldHidden
-                    value={roles.filter(r => r.selected).length}
-                    validation='required|numeric|min:1'
-                  >
-                    <CustomMessage rules='min,required,numeric'>Selecione ao menos um</CustomMessage>
-                  </FieldHidden>
+                <FieldHidden
+                  value={roles.filter(r => r.selected).length}
+                  validation='required|numeric|min:1'
+                >
+                  <CustomMessage rules='min,required,numeric'>Selecione ao menos um</CustomMessage>
+                </FieldHidden>
 
-                  {roles.map(role =>
-                    <div key={role.role}>
-                      <FieldCheckbox
-                        helperText={role.description}
-                        checked={role.selected}
-                        label={role.name}
-                        onChange={this.updateModel((m, v) => role.selected = v)}
-                      />
-                    </div>
-                  )}
-                </Fragment>
-              }
-            </DialogContent>
-            <DialogActions>
-              <Button onClick={onCancel}>
-                Cancelar
+                {roles.map(role =>
+                  <div key={role.role}>
+                    <FieldCheckbox
+                      helperText={role.description}
+                      checked={role.selected}
+                      label={role.name}
+                      onChange={this.updateModel((m, v) => role.selected = v)}
+                    />
+                  </div>
+                )}
+              </Fragment>
+            }
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={onCancel}>
+              Cancelar
             </Button>
-              <Button color='secondary' type='submit' disabled={loading || !!error}>
-                Salvar
+            <Button color='secondary' type='submit' disabled={loading || !!error}>
+              Salvar
             </Button>
-            </DialogActions>
-          </ValidationContext>
-        </form>
+          </DialogActions>
+        </FormValidation>
       </Dialog>
     );
   }

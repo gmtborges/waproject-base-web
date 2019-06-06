@@ -1,7 +1,7 @@
-import { Grid, Typography } from '@material-ui/core';
+import Grid from '@material-ui/core/Grid';
+import Typography from '@material-ui/core/Typography';
 import DropdownMenu from 'components/Shared/DropdownMenu';
 import { WithStyles } from 'decorators/withStyles';
-import { DeepReadonly } from 'helpers/immutable';
 import { IUserToken } from 'interfaces/userToken';
 import ExitToAppIcon from 'mdi-react/ExitToAppIcon';
 import KeyVariantIcon from 'mdi-react/KeyVariantIcon';
@@ -12,7 +12,7 @@ import authService from 'services/auth';
 import { DrawerContext, IDrawerContext } from '.';
 
 interface IProps {
-  user: DeepReadonly<IUserToken>;
+  user: IUserToken;
   classes?: any;
 }
 
