@@ -30,12 +30,14 @@ const secondary = {
 
 export const theme = createMuiTheme({
   palette: { primary, secondary },
-  variables
+  variables,
+  typography: { useNextVariants: true }
 });
 
 export const reverseTheme = createMuiTheme({
   palette: { primary: secondary, secondary: primary },
-  variables
+  variables,
+  typography: { useNextVariants: true }
 });
 
 export const whiteTheme = createMuiTheme({
@@ -53,5 +55,6 @@ export const whiteTheme = createMuiTheme({
       contrastText: '#fff',
     }
   },
-  variables
+  variables,
+  typography: { useNextVariants: true }
 });
