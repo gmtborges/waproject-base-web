@@ -1,5 +1,4 @@
 import Dialog from '@material-ui/core/Dialog';
-import Slide from '@material-ui/core/Slide';
 import logo from 'assets/images/logo-white.png';
 import { WithStyles } from 'decorators/withStyles';
 import * as React from 'react';
@@ -82,7 +81,7 @@ export default class LoginDialog extends PureComponent<IProps, IState> {
         disableBackdropClick
         disableEscapeKeyDown
         open={opened}
-        TransitionComponent={Transition}>
+      >
 
         <div className={classes.root}>
           <div className={classes.container}>
@@ -107,8 +106,4 @@ export default class LoginDialog extends PureComponent<IProps, IState> {
       </Dialog>
     );
   }
-}
-
-function Transition(props: any) {
-  return <Slide direction='up' {...props} />;
 }

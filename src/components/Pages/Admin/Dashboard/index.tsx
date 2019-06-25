@@ -65,7 +65,7 @@ export default class DashboardIndexPage extends PureComponent<IProps, IState> {
       <Fragment>
         <Toolbar title='Dashboard' />
 
-        <Grid container spacing={24} className={classes.marginBottom}>
+        <Grid container spacing={3} className={classes.marginBottom}>
           <Grid item xs={12} md={4} lg={6}>
             <Card>
               <CardContent>

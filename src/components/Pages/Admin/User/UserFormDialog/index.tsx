@@ -4,7 +4,6 @@ import DialogActions from '@material-ui/core/DialogActions';
 import DialogContent from '@material-ui/core/DialogContent';
 import DialogTitle from '@material-ui/core/DialogTitle';
 import LinearProgress from '@material-ui/core/LinearProgress';
-import Slide from '@material-ui/core/Slide';
 import Typography from '@material-ui/core/Typography';
 import FieldCheckbox from '@react-form-fields/material-ui/components/Checkbox';
 import CustomMessage from '@react-form-fields/material-ui/components/CustomMessage';
@@ -125,7 +124,7 @@ export default class UserFormDialog extends FormComponent<IProps, IState> {
         disableEscapeKeyDown
         onEnter={this.handleEnter}
         onExited={this.handleExit}
-        TransitionComponent={Transition}>
+      >
 
         {loading && <LinearProgress color='secondary' />}
 
@@ -199,8 +198,4 @@ export default class UserFormDialog extends FormComponent<IProps, IState> {
       </Dialog>
     );
   }
-}
-
-function Transition(props: any) {
-  return <Slide direction='up' {...props} />;
 }

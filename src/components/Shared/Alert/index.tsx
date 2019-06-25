@@ -4,7 +4,6 @@ import DialogActions from '@material-ui/core/DialogActions';
 import DialogContent from '@material-ui/core/DialogContent';
 import DialogContentText from '@material-ui/core/DialogContentText';
 import DialogTitle from '@material-ui/core/DialogTitle';
-import Slide from '@material-ui/core/Slide';
 import { WithStyles } from 'decorators/withStyles';
 import * as React from 'react';
 
@@ -88,7 +87,6 @@ export default class Alert extends React.Component<IProps, IState> {
       <Dialog
         open={opened}
         keepMounted
-        TransitionComponent={Transition}
         onClose={this.handleCancel}
         className={classes.root}
       >
@@ -112,8 +110,4 @@ export default class Alert extends React.Component<IProps, IState> {
     );
   }
 
-}
-
-function Transition(props: any) {
-  return <Slide direction='up' {...props} />;
 }

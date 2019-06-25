@@ -127,7 +127,7 @@ export abstract class ListComponent<P = {}, S extends IStateList = IStateList<an
     this.loadData();
   }
 
-  renderSearch = (props: Partial<FieldText['props']> = {}) => {
+  renderSearch = () => {
     const { term } = this.state;
 
     return (
@@ -149,7 +149,6 @@ export abstract class ListComponent<P = {}, S extends IStateList = IStateList<an
             </InputAdornment>
           )
         }}
-        {...props}
       />
     );
   }
@@ -206,11 +205,11 @@ export abstract class ListComponent<P = {}, S extends IStateList = IStateList<an
         <TablePagination
           labelRowsPerPage='items'
           labelDisplayedRows={({ from, to, count }) => `${from}-${to} de ${count}`}
-          component='div'
           count={total}
           rowsPerPage={pageSize}
           rowsPerPageOptions={[10, 25, 50]}
           page={page}
+          component={'div' as any}
           onChangePage={(event, page) => this.handlePaginate(page, pageSize)}
           onChangeRowsPerPage={(event) => this.handlePaginate(page, Number(event.target.value))}
           {...props}

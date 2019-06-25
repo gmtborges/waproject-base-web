@@ -31,13 +31,11 @@ const secondary = {
 export const theme = createMuiTheme({
   palette: { primary, secondary },
   variables,
-  typography: { useNextVariants: true }
 });
 
 export const reverseTheme = createMuiTheme({
   palette: { primary: secondary, secondary: primary },
   variables,
-  typography: { useNextVariants: true }
 });
 
 export const whiteTheme = createMuiTheme({
@@ -56,5 +54,4 @@ export const whiteTheme = createMuiTheme({
     }
   },
   variables,
-  typography: { useNextVariants: true }
 });

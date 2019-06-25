@@ -4,7 +4,6 @@ import DialogActions from '@material-ui/core/DialogActions';
 import DialogContent from '@material-ui/core/DialogContent';
 import DialogTitle from '@material-ui/core/DialogTitle';
 import Grid from '@material-ui/core/Grid';
-import Slide from '@material-ui/core/Slide';
 import Typography from '@material-ui/core/Typography';
 import transparency from 'assets/images/transparency.png';
 import { WithStyles } from 'decorators/withStyles';
@@ -36,6 +35,7 @@ interface IProps {
   content: {
     overflow: 'auto',
     width: '95vw',
+    maxWidth: '100%',
     maxHeight: 'calc(100vh - 140px) !important'
   }
 })
@@ -126,10 +126,10 @@ export default class ImageSelector extends PureComponent<IProps, IState> {
           disableBackdropClick
           disableEscapeKeyDown
           onExited={this.onExited}
-          TransitionComponent={Transition}>
+        >
 
           <DialogTitle>
-            <Grid container spacing={24} alignContent='center'>
+            <Grid container spacing={3} alignContent='center'>
               <Grid item xs={true}>
                 Selecionar Imagem
                 <Typography variant='body1'>
@@ -171,8 +171,4 @@ export default class ImageSelector extends PureComponent<IProps, IState> {
       </Fragment>
     );
   }
-}
-
-function Transition(props: any) {
-  return <Slide direction='up' {...props} />;
 }

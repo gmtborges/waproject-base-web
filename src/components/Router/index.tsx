@@ -14,7 +14,7 @@ interface IProps {
 export const RouterContext = React.createContext<() => AppRouter>(null);
 
 export default class AppRouter extends React.PureComponent<IProps> {
-  browserRouter: RouteComponentProps<any>;
+  browserRouter = React.createRef<RouteComponentProps<any, any>>();
   private listenUnregister: Function;
   private location$: rxjs.ReplaySubject<Location>;
 
@@ -24,8 +24,8 @@ export default class AppRouter extends React.PureComponent<IProps> {
   }
 
   componentDidMount() {
-    this.location$.next(this.browserRouter.history.location);
-    this.listenUnregister = this.browserRouter.history.listen(location => {
+    this.location$.next(this.browserRouter.current.history.location);
+    this.listenUnregister = this.browserRouter.current.history.listen(location => {
       this.location$.next(location);
     });
   }
@@ -35,7 +35,7 @@ export default class AppRouter extends React.PureComponent<IProps> {
   }
 
   get history(): History {
-    return this.browserRouter.history;
+    return this.browserRouter.current.history;
   }
 
   previousPage = () => {
@@ -72,7 +72,7 @@ export default class AppRouter extends React.PureComponent<IProps> {
     const { routes } = this.props;
 
     return (
-      <BrowserRouter ref={ref => this.browserRouter = ref as any}>
+      <BrowserRouter ref={this.browserRouter as any}>
         <Switch>
           {routes.map(router => this.renderRoute(router))}
           <Route path='/reload' exact render={() => <div></div>} />

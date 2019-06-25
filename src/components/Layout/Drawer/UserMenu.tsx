@@ -66,7 +66,7 @@ export default class AppDrawerUser extends PureComponent<IProps> {
         </DrawerContext.Consumer>
 
         <Grid container className={classes.root} wrap='nowrap'>
-          <Grid item xs={true} >
+          <Grid item xs={true}>
             <Typography variant='body2' color='inherit' className={classes.text}>
               <small className={classes.textSmall}>Bem vindo</small>
               {user.firstName}

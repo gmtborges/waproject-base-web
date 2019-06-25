@@ -4,7 +4,6 @@ import DialogActions from '@material-ui/core/DialogActions';
 import DialogContent from '@material-ui/core/DialogContent';
 import DialogTitle from '@material-ui/core/DialogTitle';
 import LinearProgress from '@material-ui/core/LinearProgress';
-import Slide from '@material-ui/core/Slide';
 import FormValidation from '@react-form-fields/material-ui/components/FormValidation';
 import FieldText from '@react-form-fields/material-ui/components/Text';
 import { FormComponent, IStateForm } from 'components/Abstract/Form';
@@ -82,7 +81,7 @@ export default class ChangePasswordDialog extends FormComponent<IProps, IState> 
         disableEscapeKeyDown
         open={opened}
         onExited={this.resetForm}
-        TransitionComponent={Transition}>
+      >
 
         {loading && <LinearProgress color='secondary' />}
 
@@ -128,8 +127,4 @@ export default class ChangePasswordDialog extends FormComponent<IProps, IState> 
       </Dialog>
     );
   }
-}
-
-function Transition(props: any) {
-  return <Slide direction='up' {...props} />;
 }

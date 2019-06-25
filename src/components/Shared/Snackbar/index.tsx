@@ -35,8 +35,8 @@ interface IProps {
     background: theme.palette.error.main
   },
   close: {
-    width: theme.spacing.unit * 4,
-    height: theme.spacing.unit * 4,
+    width: theme.spacing(4),
+    height: theme.spacing(4),
   },
 }))
 export default class Snackbar extends PureComponent<IProps, IState> {
