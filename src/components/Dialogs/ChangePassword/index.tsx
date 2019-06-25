@@ -86,7 +86,7 @@ export default class ChangePasswordDialog extends FormComponent<IProps, IState> 
 
         {loading && <LinearProgress color='secondary' />}
 
-        <FormValidation onSubmit={this.onSubmit}>
+        <FormValidation onSubmit={this.onSubmit} ref={this.formValidationRef}>
           <DialogTitle>Trocar Senha</DialogTitle>
 
           <DialogContent className={classes.content}>

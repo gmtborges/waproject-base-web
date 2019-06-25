@@ -1,5 +1,5 @@
 import FormValidation from '@react-form-fields/material-ui/components/FormValidation';
-import { Component } from 'react';
+import React, { Component } from 'react';
 
 export interface IStateForm<T extends Object = any> {
   model?: Partial<T>;
@@ -7,7 +7,7 @@ export interface IStateForm<T extends Object = any> {
 }
 
 export abstract class FormComponent<P, S extends IStateForm> extends Component<P, S> {
-  protected formValidation: FormValidation;
+  protected formValidationRef = React.createRef<FormValidation>();
   protected scrollTop: Function;
 
   constructor(props: any) {
@@ -20,17 +20,13 @@ export abstract class FormComponent<P, S extends IStateForm> extends Component<P
     return null;
   }
 
-  public bindForm = (formValidation: FormValidation): void => {
-    this.formValidation = formValidation;
-  }
-
   public isFormValid = () => {
-    return this.formValidation.isValid();
+    return this.formValidationRef.current.isValid();
   }
 
   public resetForm = () => {
     this.setState({ model: {}, formSubmitted: false });
-    this.formValidation.reset();
+    this.formValidationRef.current.reset();
   }
 
   protected updateModel = (handler: (model: S['model'], value: any) => void): (value: any) => void => {

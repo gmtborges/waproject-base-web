@@ -177,7 +177,7 @@ export default class DrawerListItem extends PureComponent<IProps, IState> {
         <ExpansionPanelDetails className={classes.expandableDetails}>
           <List className={classes.innerList}>
             {route.subRoutes.map(sub =>
-              <DrawerListItem key={sub.path} user={user} route={sub} onClick={this.handleSubClick} />
+              <DrawerListItem key={sub.path} user={user} route={sub} classes={classes} onClick={this.handleSubClick} />
             )}
           </List>
         </ExpansionPanelDetails>

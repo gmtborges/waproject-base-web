@@ -79,12 +79,12 @@ export default class UserFormDialog extends FormComponent<IProps, IState> {
     userService.roles().pipe(
       rxjsOperators.logError(),
       rxjsOperators.bindComponent(this)
-    ).subscribe(({ data }) => {
+    ).subscribe(({ data, updating }) => {
       const { user } = this.props;
 
       this.setState({
-        roles: data.map(r => ({ ...r, selected: !user ? false : user.roles.includes(r.role) })),
-        loading: false
+        roles: (data || []).map(r => ({ ...r, selected: !user ? false : user.roles.includes(r.role) })),
+        loading: updating
       });
     }, error => {
       this.setState({ loading: false, error });
@@ -129,7 +129,7 @@ export default class UserFormDialog extends FormComponent<IProps, IState> {
 
         {loading && <LinearProgress color='secondary' />}
 
-        <FormValidation onSubmit={this.onSubmit}>
+        <FormValidation onSubmit={this.onSubmit} ref={this.formValidationRef}>
           <DialogTitle>{this.isEdit ? 'Editar' : 'Novo'} Usuário</DialogTitle>
           <DialogContent className={classes.content}>
             {error &&
@@ -163,7 +163,7 @@ export default class UserFormDialog extends FormComponent<IProps, IState> {
                   onChange={this.updateModel((model, v) => model.email = v)}
                 />
 
-                <Typography variant='subheading' className={classes.heading}>
+                <Typography variant='subtitle1' className={classes.heading}>
                   Acesso
                 </Typography>
 

@@ -60,11 +60,11 @@ export default class ExtraIndexPage extends PureComponent<IProps, IState> {
 
         <Card>
           <CardContent>
-            <Typography variant='subheading' gutterBottom>Image Cropper + Compressor</Typography>
+            <Typography variant='subtitle1' gutterBottom>Image Cropper + Compressor</Typography>
             {!!image && <img className={classes.img} src={image} alt='cropper' />}
           </CardContent>
           <CardActions className={classes.cardActions}>
-            <Button onClick={this.openSelector} variant='raised' color='secondary'>
+            <Button onClick={this.openSelector} variant='contained' color='secondary'>
               Selecionar
             </Button>
           </CardActions>

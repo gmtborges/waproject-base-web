@@ -59,7 +59,7 @@ export default class LoginDialogForm extends FormComponent<IProps, IState> {
     const { classes, onRecoveryAccess } = this.props;
 
     return (
-      <FormValidation onSubmit={this.onSubmit}>
+      <FormValidation onSubmit={this.onSubmit} ref={this.formValidationRef}>
         <Card>
           <CardContent>
 
