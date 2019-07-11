@@ -123,17 +123,15 @@ async function removePackages() {
 }
 
 async function resetGit(params) {
-  await new Promise((resolve, reject) =>
-    rimraf('./.git', err => err ? reject(err) : resolve())
-  );
-
-  await execCommand('git init');
+  const originalRepo = await execCommand('git remote get-url origin');
+  await execCommand('git remote remove origin');
+  await execCommand(`git remote add seed ${originalRepo}`);
 
   if (params.repository) {
     await execCommand(`git remote add origin ${params.repository}`);
   }
 
-  await execCommand('git add . && git commit -am "initial"')
+  await execCommand('git add . && git commit -am "initial"');
 }
 
 async function selfDestruction() {
