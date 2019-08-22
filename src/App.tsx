@@ -1,38 +1,39 @@
 import './assets/global.css';
-import 'fieldConfig';
 
 import CssBaseline from '@material-ui/core/CssBaseline';
 import MuiThemeProvider from '@material-ui/core/styles/MuiThemeProvider';
 import FormFieldsContext from '@react-form-fields/material-ui/components/Context';
 import { theme } from 'assets/theme';
 import Dialogs from 'components/Dialogs';
-import AppRouter, { RouterContext } from 'components/Router';
+import Pages from 'components/Pages';
 import Alert from 'components/Shared/Alert';
-import Snackbar from 'components/Shared/Snackbar';
-import React from 'react';
-import baseRoutes from 'routes';
+import Loader from 'components/Shared/Loader';
+import Toast from 'components/Shared/Toast';
 import fieldConfig from 'fieldConfig';
+import React from 'react';
+import { setup } from 'rxjs-operators';
 
 class App extends React.PureComponent {
-  router = React.createRef<AppRouter>();
+  loader = React.createRef<Loader>();
+  formFieldConfig = fieldConfig;
 
-  getRouter = () => {
-    return this.router.current;
+  componentDidMount() {
+    setup(this.loader.current);
   }
 
   render() {
     return (
       <MuiThemeProvider theme={theme}>
-        <FormFieldsContext config={fieldConfig}>
+        <FormFieldsContext config={this.formFieldConfig}>
           <CssBaseline />
           <Dialogs />
 
-          <Alert.Global />
-          <Snackbar.Global />
+          <Loader innerRef={this.loader} />
 
-          <RouterContext.Provider value={this.getRouter}>
-            <AppRouter routes={baseRoutes} ref={this.router} />
-          </RouterContext.Provider>
+          <Alert.Global />
+          <Toast.Global />
+
+          <Pages />
         </FormFieldsContext>
       </MuiThemeProvider>
     );

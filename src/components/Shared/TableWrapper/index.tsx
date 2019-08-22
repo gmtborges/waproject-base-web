@@ -33,7 +33,7 @@ interface IState {
   }
 })
 export default class TableWrapper extends PureComponent<IProps, IState> {
-  root: HTMLDivElement;
+  root: React.RefObject<HTMLDivElement> = React.createRef();
 
   constructor(props: IProps) {
     super(props);
@@ -41,20 +41,22 @@ export default class TableWrapper extends PureComponent<IProps, IState> {
   }
 
   componentDidMount() {
-    this.setState({ scrollEnded: this.root.clientWidth === this.root.scrollWidth });
-    this.root.addEventListener('scroll', this.onScroll);
+    this.setState({
+      scrollEnded: this.root.current.clientWidth === this.root.current.scrollWidth
+    });
+    this.root.current.addEventListener('scroll', this.onScroll);
     window.addEventListener('resize', this.onScroll);
   }
 
   componentWillUnmount() {
-    this.root.removeEventListener('scroll', this.onScroll);
+    this.root.current.removeEventListener('scroll', this.onScroll);
     window.removeEventListener('resize', this.onScroll);
   }
 
   onScroll = () => {
-    const endScroll = this.root.scrollWidth - this.root.clientWidth - 10;
-    this.setState({ scrollEnded: this.root.scrollLeft >= endScroll });
-  }
+    const endScroll = this.root.current.scrollWidth - this.root.current.clientWidth - 10;
+    this.setState({ scrollEnded: this.root.current.scrollLeft >= endScroll });
+  };
 
   render() {
     const { scrollEnded } = this.state;
@@ -62,14 +64,11 @@ export default class TableWrapper extends PureComponent<IProps, IState> {
 
     return (
       <div className={classes.root}>
-        <div className={`${classes.shadow} ${scrollEnded ? classes.noShadow : ''}`}></div>
-        <div className={classes.scrollable} ref={ref => this.root = ref}>
-          <div style={({ minWidth: minWidth || 650 })}>
-            {children}
-          </div>
+        <div className={`${classes.shadow} ${scrollEnded ? classes.noShadow : ''}`} />
+        <div className={classes.scrollable} ref={this.root}>
+          <div style={{ minWidth: minWidth || 650 }}>{children}</div>
         </div>
       </div>
-
     );
   }
 }

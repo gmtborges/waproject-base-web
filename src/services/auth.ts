@@ -1,70 +1,64 @@
-import { IUserToken } from 'interfaces/userToken';
-import * as rxjs from 'rxjs';
-import rxjsOperators from 'rxjs-operators';
+import IUserToken from 'interfaces/tokens/userToken';
+import * as Rx from 'rxjs';
+import * as RxOp from 'rxjs-operators';
 
 import apiService, { ApiService } from './api';
+import cacheService from './cache';
 import tokenService, { TokenService } from './token';
 
 export class AuthService {
-  private user$: rxjs.Observable<IUserToken>;
-  private openLogin$: rxjs.BehaviorSubject<boolean>;
-  private openChangePassword$: rxjs.BehaviorSubject<boolean>;
+  private user$: Rx.Observable<IUserToken>;
+  private openLogin$: Rx.BehaviorSubject<boolean>;
+  private openChangePassword$: Rx.BehaviorSubject<boolean>;
 
-  constructor(
-    private api: ApiService,
-    private tokenService: TokenService
-  ) {
-    this.openLogin$ = new rxjs.BehaviorSubject(false);
-    this.openChangePassword$ = new rxjs.BehaviorSubject(false);
+  constructor(private api: ApiService, private tokenService: TokenService) {
+    this.openLogin$ = new Rx.BehaviorSubject(false);
+    this.openChangePassword$ = new Rx.BehaviorSubject(false);
 
     this.user$ = this.tokenService.getToken().pipe(
-      rxjsOperators.map(token => {
+      RxOp.map(token => {
         if (!token) return null;
 
         const user = this.tokenService.decode<IUserToken>(token);
         if (!user) return null;
 
         user.fullName = `${user.firstName} ${user.lastName}`;
-        user.canAccess = (...roles: string[]) => {
-          if (!roles || roles.length === 0) return true;
-          if (user.roles.includes('sysAdmin') || user.roles.includes('admin')) return true;
-
-          return roles.some(r => user.roles.includes(r));
-        };
-
         return user;
       }),
-      rxjsOperators.catchError(() => {
-        console.log('error');
-        return rxjs.of(null);
-      }),
-      rxjsOperators.shareReplay(1)
+      RxOp.catchError(() => Rx.of(null)),
+      RxOp.shareReplay(1)
     );
+
+    this.getUser()
+      .pipe(
+        RxOp.distinctUntilChanged((a, b) => (a || ({} as IUserToken)).id !== (b || ({} as IUserToken)).id),
+        RxOp.switchMap(() => cacheService.clear()),
+        RxOp.logError()
+      )
+      .subscribe();
   }
 
   public openLogin(): void {
     this.openLogin$.next(true);
   }
 
-  public shouldOpenLogin(): rxjs.Observable<boolean> {
+  public shouldOpenLogin(): Rx.Observable<boolean> {
     return this.openLogin$.asObservable();
   }
 
-  public login(email: string, password: string): rxjs.Observable<void> {
-    return this.api.post('/auth/login', { email, password }).pipe(
-      rxjsOperators.tap(() => this.openLogin$.next(false))
-    );
+  public login(email: string, password: string): Rx.Observable<void> {
+    return this.api.post('/auth/login', { email, password }).pipe(RxOp.tap(() => this.openLogin$.next(false)));
   }
 
-  public logout(): rxjs.Observable<void> {
+  public logout(): Rx.Observable<void> {
     return this.tokenService.clearToken();
   }
 
-  public sendResetPassword(email: string): rxjs.Observable<void> {
+  public sendResetPassword(email: string): Rx.Observable<void> {
     return this.api.post('/auth/send-reset', { email });
   }
 
-  public resetPassword(token: string, password: string): rxjs.Observable<void> {
+  public resetPassword(token: string, password: string): Rx.Observable<void> {
     return this.api.post('/auth/reset-password', { token, password });
   }
 
@@ -76,20 +70,36 @@ export class AuthService {
     this.openChangePassword$.next(false);
   }
 
-  public shouldOpenChangePassword(): rxjs.Observable<boolean> {
+  public shouldOpenChangePassword(): Rx.Observable<boolean> {
     return this.openChangePassword$.asObservable();
   }
 
-  public changePassword(currentPassword: string, newPassword: string): rxjs.Observable<void> {
-    return this.api.post('/auth/change-password', { currentPassword, newPassword });
+  public changePassword(currentPassword: string, newPassword: string): Rx.Observable<void> {
+    return this.api.post('/auth/change-password', {
+      currentPassword,
+      newPassword
+    });
   }
 
-  public getUser(): rxjs.Observable<IUserToken> {
+  public getUser(): Rx.Observable<IUserToken> {
     return this.user$;
   }
 
-  public isAuthenticated(): rxjs.Observable<boolean> {
-    return this.tokenService.getToken().pipe(rxjsOperators.map(token => !!token));
+  public canAccess(...roles: string[]): Rx.Observable<boolean> {
+    return this.getUser().pipe(
+      RxOp.map(user => {
+        if (!user) return false;
+
+        if (!roles || roles.length === 0) return true;
+        if (user.roles.includes('sysAdmin') || user.roles.includes('admin')) return true;
+
+        return roles.some(r => user.roles.includes(r));
+      })
+    );
+  }
+
+  public isAuthenticated(): Rx.Observable<boolean> {
+    return this.getUser().pipe(RxOp.map(user => !!user));
   }
 }
 

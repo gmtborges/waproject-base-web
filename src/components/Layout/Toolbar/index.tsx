@@ -1,14 +1,12 @@
 import AppBar from '@material-ui/core/AppBar';
 import IconButton from '@material-ui/core/IconButton';
-import MuiThemeProvider from '@material-ui/core/styles/MuiThemeProvider';
 import CoreToolbar from '@material-ui/core/Toolbar';
 import Typography from '@material-ui/core/Typography';
-import { whiteTheme } from 'assets/theme';
 import { WithStyles } from 'decorators/withStyles';
 import MenuIcon from 'mdi-react/MenuIcon';
 import React, { PureComponent } from 'react';
 
-import { DrawerContext, IDrawerContext } from '../Drawer';
+import { DrawerContext, IDrawerContext } from '../Drawer/context';
 
 interface IProps {
   title?: string;
@@ -28,49 +26,44 @@ interface IProps {
   appBar: {
     marginLeft: theme.variables.drawerWidth,
     [theme.breakpoints.up('md')]: {
-      width: `calc(100% - ${theme.variables.drawerWidth}px)`
+      width: `calc(100% - ${theme.variables.drawerWidth}px)`,
+      backgroundColor: 'white',
+      color: theme.palette.text.primary
     }
   },
   iconMenu: {
     marginLeft: '-15px',
     [theme.breakpoints.up('md')]: {
-      display: 'none',
+      display: 'none'
     }
-  },
+  }
 }))
 export default class Toolbar extends PureComponent<IProps> {
-  drawer: IDrawerContext;
+  static contextType = DrawerContext;
+  context: IDrawerContext;
 
   openDrawer = () => {
-    this.drawer.open();
-  }
+    this.context.open();
+  };
 
   render() {
     const { children, title, classes } = this.props;
 
     return (
       <div className={classes.root}>
-        <DrawerContext.Consumer>
-          {drawer => (this.drawer = drawer) && null}
-        </DrawerContext.Consumer>
-
-        <MuiThemeProvider theme={whiteTheme}>
-          <AppBar className={classes.appBar} elevation={1}>
-            <CoreToolbar>
-              <IconButton color='inherit'
-                onClick={this.openDrawer}
-                className={classes.iconMenu}>
-                <MenuIcon />
-              </IconButton>
-              {children}
-              {!children &&
-                <Typography variant='h6' color='inherit' noWrap>
-                  {title || 'App'}
-                </Typography>
-              }
-            </CoreToolbar>
-          </AppBar>
-        </MuiThemeProvider>
+        <AppBar className={classes.appBar}>
+          <CoreToolbar>
+            <IconButton color='inherit' onClick={this.openDrawer} className={classes.iconMenu}>
+              <MenuIcon />
+            </IconButton>
+            {children}
+            {!children && (
+              <Typography variant='h6' color='inherit' noWrap>
+                {title || 'App'}
+              </Typography>
+            )}
+          </CoreToolbar>
+        </AppBar>
       </div>
     );
   }

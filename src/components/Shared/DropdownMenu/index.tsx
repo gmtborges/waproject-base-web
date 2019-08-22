@@ -1,63 +1,84 @@
 import IconButton from '@material-ui/core/IconButton';
 import Menu, { MenuProps } from '@material-ui/core/Menu';
-import { MdiReactIconComponentType } from 'mdi-react/';
-import MoreVertIcon from 'mdi-react/MoreVertIcon';
+import DotsHorizontalIcon from 'mdi-react/DotsHorizontalIcon';
 import * as React from 'react';
 
+import PermissionHide from '../PermissionHide';
+import DropdownMenuContext from './context';
 import OptionItem from './OptionItem';
 
 export interface IOption {
   text: string;
-  icon?: MdiReactIconComponentType;
+  icon?: typeof DotsHorizontalIcon;
   handler: () => void;
 }
 
 interface IState {
   targetElem?: HTMLElement;
+  options: React.ReactChild[];
+  content: React.ReactChild[];
 }
 
-interface IProps extends Partial<MenuProps> {
-  options: IOption[];
-}
+interface IProps extends Partial<MenuProps> {}
 
 export default class DropdownMenu extends React.PureComponent<IProps, IState> {
   constructor(props: any) {
     super(props);
-    this.state = {};
+    this.state = { options: [], content: [] };
+  }
+
+  static getDerivedStateFromProps({ children }: IProps, currentState: IState): IState {
+    const options: React.ReactChild[] = [];
+    const content: React.ReactChild[] = [];
+
+    React.Children.toArray(children).forEach((child: any) => {
+      if (child.type === OptionItem || child.type === PermissionHide) {
+        options.push(child);
+        return;
+      }
+
+      content.push(child);
+    });
+
+    return {
+      ...currentState,
+      options,
+      content: content.length ? content : null
+    };
   }
 
   handleOpen = (event: React.MouseEvent<HTMLElement>) => {
+    event.preventDefault();
+    event.stopPropagation();
     this.setState({ targetElem: event.currentTarget });
-  }
+  };
 
-  handleClose = () => {
+  handleClose = (event?: React.MouseEvent<HTMLElement>) => {
+    event && event.stopPropagation();
     this.setState({ targetElem: null });
-  }
+  };
 
-  handleClick = (option: IOption) => {
+  handleClick = (handler: () => void) => {
     this.handleClose();
-    option.handler();
-  }
+    handler();
+  };
 
   render() {
-    const { targetElem } = this.state;
-    const { options, ...menuProps } = this.props;
+    const { targetElem, options, content } = this.state;
+    const { ...menuProps } = this.props;
 
     return (
       <div>
-        <IconButton onClick={this.handleOpen} color='inherit'>
-          <MoreVertIcon />
-        </IconButton>
+        {!!content && <span onClick={this.handleOpen}>{content}</span>}
 
-        <Menu
-          {...menuProps}
-          anchorEl={targetElem}
-          open={!!targetElem}
-          onClose={this.handleClose}
-        >
-          {options.map(option =>
-            <OptionItem key={option.text} option={option} onClick={this.handleClick} />
-          )}
+        {!content && (
+          <IconButton onClick={this.handleOpen} color='inherit'>
+            <DotsHorizontalIcon />
+          </IconButton>
+        )}
+
+        <Menu {...menuProps} anchorEl={targetElem} open={!!targetElem} onClose={this.handleClose}>
+          <DropdownMenuContext.Provider value={this.handleClick}>{options}</DropdownMenuContext.Provider>
         </Menu>
       </div>
     );

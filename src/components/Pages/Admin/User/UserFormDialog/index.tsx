@@ -4,6 +4,7 @@ import DialogActions from '@material-ui/core/DialogActions';
 import DialogContent from '@material-ui/core/DialogContent';
 import DialogTitle from '@material-ui/core/DialogTitle';
 import LinearProgress from '@material-ui/core/LinearProgress';
+import Slide from '@material-ui/core/Slide';
 import Typography from '@material-ui/core/Typography';
 import FieldCheckbox from '@react-form-fields/material-ui/components/Checkbox';
 import CustomMessage from '@react-form-fields/material-ui/components/CustomMessage';
@@ -12,12 +13,12 @@ import FieldHidden from '@react-form-fields/material-ui/components/Hidden';
 import FieldText from '@react-form-fields/material-ui/components/Text';
 import { FormComponent, IStateForm } from 'components/Abstract/Form';
 import ErrorMessage from 'components/Shared/ErrorMessage';
-import Snackbar from 'components/Shared/Snackbar';
+import Toast from 'components/Shared/Toast';
 import { WithStyles } from 'decorators/withStyles';
-import { IUser } from 'interfaces/user';
-import { IUserRole } from 'interfaces/userRole';
+import IUser from 'interfaces/models/user';
+import IUserRole from 'interfaces/models/userRole';
 import React, { Fragment } from 'react';
-import rxjsOperators from 'rxjs-operators';
+import * as RxOp from 'rxjs-operators';
 import userService from 'services/user';
 
 interface IState extends IStateForm<IUser> {
@@ -63,55 +64,70 @@ export default class UserFormDialog extends FormComponent<IProps, IState> {
 
     this.setState({ model: user || {} });
     this.loadData();
-  }
+  };
 
   handleExit = () => {
     this.resetForm();
 
     const roles = this.state.roles.map(r => ({ ...r, selected: false }));
     this.setState({ roles });
-  }
+  };
 
   loadData = () => {
     this.setState({ loading: true, error: null });
 
-    userService.roles().pipe(
-      rxjsOperators.logError(),
-      rxjsOperators.bindComponent(this)
-    ).subscribe(({ data, updating }) => {
-      const { user } = this.props;
+    userService
+      .roles()
+      .pipe(
+        RxOp.logError(),
+        RxOp.bindComponent(this)
+      )
+      .subscribe(
+        roles => {
+          const { user } = this.props;
 
-      this.setState({
-        roles: (data || []).map(r => ({ ...r, selected: !user ? false : user.roles.includes(r.role) })),
-        loading: updating
-      });
-    }, error => {
-      this.setState({ loading: false, error });
-    });
-  }
+          this.setState({
+            roles: roles.map(r => ({
+              ...r,
+              selected: !user ? false : user.roles.includes(r.role)
+            })),
+            loading: false
+          });
+        },
+        error => {
+          this.setState({ loading: false, error });
+        }
+      );
+  };
 
   onSubmit = (isValid: boolean) => {
+    if (!isValid) return;
+
     const { model, roles } = this.state;
     const { onComplete } = this.props;
-
-    if (!isValid) return;
 
     this.setState({ loading: true });
     model.roles = roles.filter(r => r.selected).map(r => r.role);
 
-    userService.save(model as IUser).pipe(
-      rxjsOperators.logError(),
-      rxjsOperators.bindComponent(this)
-    ).subscribe(user => {
-      Snackbar.show(`${user.firstName} foi salvo${this.isEdit ? '' : ', um email foi enviado com a senha'}`);
-      this.setState({ loading: false });
+    userService
+      .save(model as IUser)
+      .pipe(
+        RxOp.logError(),
+        RxOp.bindComponent(this)
+      )
+      .subscribe(
+        user => {
+          Toast.show(`${user.firstName} foi salvo${this.isEdit ? '' : ', um email foi enviado com a senha'}`);
+          this.setState({ loading: false });
 
-      onComplete(user);
-    }, err => {
-      Snackbar.error(err.message === 'email-unavailable' ? 'Email já utlizado' : err);
-      this.setState({ loading: false });
-    });
-  }
+          onComplete(user);
+        },
+        err => {
+          Toast.error(err.message === 'email-unavailable' ? 'Email já utlizado' : err);
+          this.setState({ loading: false });
+        }
+      );
+  };
 
   render() {
     const { model, loading, error, roles } = this.state;
@@ -124,25 +140,23 @@ export default class UserFormDialog extends FormComponent<IProps, IState> {
         disableEscapeKeyDown
         onEnter={this.handleEnter}
         onExited={this.handleExit}
+        TransitionComponent={Transition}
       >
-
         {loading && <LinearProgress color='secondary' />}
 
-        <FormValidation onSubmit={this.onSubmit} ref={this.formValidationRef}>
+        <FormValidation onSubmit={this.onSubmit} ref={this.bindForm}>
           <DialogTitle>{this.isEdit ? 'Editar' : 'Novo'} Usuário</DialogTitle>
           <DialogContent className={classes.content}>
-            {error &&
-              <ErrorMessage error={error} tryAgain={this.loadData} />
-            }
+            {error && <ErrorMessage error={error} tryAgain={this.loadData} />}
 
-            {!error &&
+            {!error && (
               <Fragment>
                 <FieldText
                   label='Nome'
                   disabled={loading}
                   value={model.firstName}
                   validation='required|min:3|max:50'
-                  onChange={this.updateModel((model, v) => model.firstName = v)}
+                  onChange={this.updateModel((model, v) => (model.firstName = v))}
                 />
 
                 <FieldText
@@ -150,7 +164,7 @@ export default class UserFormDialog extends FormComponent<IProps, IState> {
                   disabled={loading}
                   value={model.lastName}
                   validation='string|min:3|max:50'
-                  onChange={this.updateModel((model, v) => model.lastName = v)}
+                  onChange={this.updateModel((model, v) => (model.lastName = v))}
                 />
 
                 <FieldText
@@ -159,37 +173,32 @@ export default class UserFormDialog extends FormComponent<IProps, IState> {
                   disabled={loading}
                   value={model.email}
                   validation='required|email|max:150'
-                  onChange={this.updateModel((model, v) => model.email = v)}
+                  onChange={this.updateModel((model, v) => (model.email = v))}
                 />
 
                 <Typography variant='subtitle1' className={classes.heading}>
                   Acesso
                 </Typography>
 
-                <FieldHidden
-                  value={roles.filter(r => r.selected).length}
-                  validation='required|numeric|min:1'
-                >
+                <FieldHidden value={roles.filter(r => r.selected).length} validation='required|numeric|min:1'>
                   <CustomMessage rules='min,required,numeric'>Selecione ao menos um</CustomMessage>
                 </FieldHidden>
 
-                {roles.map(role =>
+                {roles.map(role => (
                   <div key={role.role}>
                     <FieldCheckbox
                       helperText={role.description}
                       checked={role.selected}
                       label={role.name}
-                      onChange={this.updateModel((m, v) => role.selected = v)}
+                      onChange={this.updateModel((m, v) => (role.selected = v))}
                     />
                   </div>
-                )}
+                ))}
               </Fragment>
-            }
+            )}
           </DialogContent>
           <DialogActions>
-            <Button onClick={onCancel}>
-              Cancelar
-            </Button>
+            <Button onClick={onCancel}>Cancelar</Button>
             <Button color='secondary' type='submit' disabled={loading || !!error}>
               Salvar
             </Button>
@@ -198,4 +207,8 @@ export default class UserFormDialog extends FormComponent<IProps, IState> {
       </Dialog>
     );
   }
+}
+
+function Transition(props: any) {
+  return <Slide direction='up' {...props} />;
 }

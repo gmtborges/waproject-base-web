@@ -1,12 +1,12 @@
 import IconButton from '@material-ui/core/IconButton';
-import CoreSnackbar from '@material-ui/core/Snackbar';
+import Snackbar from '@material-ui/core/Snackbar';
 import { WithStyles } from 'decorators/withStyles';
 import { errorMessageFormatter } from 'formatters/errorMessage';
 import CloseIcon from 'mdi-react/CloseIcon';
 import React, { PureComponent } from 'react';
-import { SNACKBAR_DEFAULT_TIMEOUT } from 'settings';
+import { TOAST_DEFAULT_TIMEOUT, TOAST_ERROR_TIMEOUT } from 'settings';
 
-import SnackbarGlobalProvider from './global';
+import ToastGlobalProvider from './global';
 
 interface IState {
   opened: boolean;
@@ -36,11 +36,11 @@ interface IProps {
   },
   close: {
     width: theme.spacing(4),
-    height: theme.spacing(4),
-  },
+    height: theme.spacing(4)
+  }
 }))
-export default class Snackbar extends PureComponent<IProps, IState> {
-  static Global = SnackbarGlobalProvider;
+export default class Toast extends PureComponent<IProps, IState> {
+  static Global = ToastGlobalProvider;
 
   constructor(props: IProps) {
     super(props);
@@ -63,37 +63,33 @@ export default class Snackbar extends PureComponent<IProps, IState> {
   }
 
   static show(message: string, timeout?: number) {
-    return SnackbarGlobalProvider.show(message, null, timeout);
+    return ToastGlobalProvider.show(message, null, timeout || TOAST_DEFAULT_TIMEOUT);
   }
 
   static error(error: any) {
-    return SnackbarGlobalProvider.show(null, error);
+    return ToastGlobalProvider.show(null, error, TOAST_ERROR_TIMEOUT);
   }
 
   handleClose = (event: any, reason: string) => {
     if (reason === 'clickaway') return;
     this.props.onClose();
-  }
+  };
 
   public render(): JSX.Element {
     const { opened, message, isError } = this.state;
     const { timeout, classes, onClose } = this.props;
 
     return (
-      <CoreSnackbar
+      <Snackbar
         anchorOrigin={{ vertical: 'top', horizontal: 'right' }}
         open={opened}
-        autoHideDuration={timeout || SNACKBAR_DEFAULT_TIMEOUT}
+        autoHideDuration={timeout}
         onClose={this.handleClose}
         message={<span>{message}</span>}
         className={classes.wrapper}
         ContentProps={{ className: isError ? classes.contentError : null }}
         action={[
-          <IconButton
-            key='close'
-            color='inherit'
-            className='close'
-            onClick={onClose}>
+          <IconButton key='close' color='inherit' className='close' onClick={onClose}>
             <CloseIcon />
           </IconButton>
         ]}

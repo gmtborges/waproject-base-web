@@ -1,14 +1,14 @@
 import Fab from '@material-ui/core/Fab';
 import Tooltip from '@material-ui/core/Tooltip';
 import { WithStyles } from 'decorators/withStyles';
-import { MdiReactIconComponentType } from 'mdi-react/';
+import MoreVertIcon from 'mdi-react/MoreVertIcon';
 import React, { PureComponent } from 'react';
 
 interface IProps {
   classes?: any;
   hasTabs?: boolean;
   actions: {
-    icon: MdiReactIconComponentType,
+    icon: typeof MoreVertIcon;
     tooltip?: string;
     onClick: () => void;
   }[];
@@ -33,7 +33,7 @@ export default class FabButton extends PureComponent<IProps> {
       return this.renderOne();
     }
 
-    return (<div></div>);
+    return null;
   }
 
   renderOne() {
@@ -42,19 +42,19 @@ export default class FabButton extends PureComponent<IProps> {
 
     return (
       <div className={classes.root + ' header-app ' + (hasTabs ? classes.withTabs : '')}>
-        {action.tooltip &&
+        {action.tooltip && (
           <Tooltip title={action.tooltip}>
             <Fab color='secondary' onClick={action.onClick}>
               <action.icon />
             </Fab>
           </Tooltip>
-        }
+        )}
 
-        {!action.tooltip &&
+        {!action.tooltip && (
           <Fab color='secondary' onClick={action.onClick}>
             <action.icon />
           </Fab>
-        }
+        )}
       </div>
     );
   }

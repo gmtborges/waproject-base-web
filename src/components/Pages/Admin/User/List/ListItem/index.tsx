@@ -3,12 +3,12 @@ import TableRow from '@material-ui/core/TableRow';
 import ListItemComponent, { IStateListItem } from 'components/Abstract/ListItem';
 import Alert from 'components/Shared/Alert';
 import { IOption } from 'components/Shared/DropdownMenu';
-import Snackbar from 'components/Shared/Snackbar';
-import { IUser } from 'interfaces/user';
+import Toast from 'components/Shared/Toast';
+import IUser from 'interfaces/models/user';
 import DeleteIcon from 'mdi-react/DeleteIcon';
 import EditIcon from 'mdi-react/EditIcon';
 import * as React from 'react';
-import rxjsOperators from 'rxjs-operators';
+import * as RxOp from 'rxjs-operators';
 import userService from 'services/user';
 
 interface IState extends IStateListItem {
@@ -26,21 +26,24 @@ export default class ListItem extends ListItemComponent<IProps, IState> {
 
   constructor(props: IProps) {
     super(props);
-    this.options = [{
-      text: 'Editar',
-      icon: EditIcon,
-      handler: this.handleEdit
-    }, {
-      text: 'Excluir',
-      icon: DeleteIcon,
-      handler: this.handleDelete
-    }];
+    this.options = [
+      {
+        text: 'Editar',
+        icon: EditIcon,
+        handler: this.handleEdit
+      },
+      {
+        text: 'Excluir',
+        icon: DeleteIcon,
+        handler: this.handleDelete
+      }
+    ];
   }
 
   handleEdit = () => {
     const { user, onEdit } = this.props;
     onEdit(user);
-  }
+  };
 
   handleDelete = async () => {
     const { user, onDeleteComplete } = this.props;
@@ -50,17 +53,23 @@ export default class ListItem extends ListItemComponent<IProps, IState> {
 
     this.setState({ loading: true });
 
-    userService.delete(user.id).pipe(
-      rxjsOperators.logError(),
-      rxjsOperators.bindComponent(this)
-    ).subscribe(() => {
-      Snackbar.show(`${user.firstName} foi removido`);
-      this.setState({ loading: false, deleted: true });
-      onDeleteComplete();
-    }, error => {
-      this.setState({ loading: false, error });
-    });
-  }
+    userService
+      .delete(user.id)
+      .pipe(
+        RxOp.logError(),
+        RxOp.bindComponent(this)
+      )
+      .subscribe(
+        () => {
+          Toast.show(`${user.firstName} foi removido`);
+          this.setState({ loading: false, deleted: true });
+          onDeleteComplete();
+        },
+        error => {
+          this.setState({ loading: false, error });
+        }
+      );
+  };
 
   render(): JSX.Element {
     const { deleted } = this.state;
@@ -74,9 +83,7 @@ export default class ListItem extends ListItemComponent<IProps, IState> {
       <TableRow>
         <TableCell>{user.fullName}</TableCell>
         <TableCell>{user.email}</TableCell>
-        <TableCell>
-          {this.renderSideMenu(this.options)}
-        </TableCell>
+        <TableCell>{this.renderSideMenu(this.options)}</TableCell>
       </TableRow>
     );
   }

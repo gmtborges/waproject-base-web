@@ -16,12 +16,12 @@ import {
   Pie,
   PieChart,
   ResponsiveContainer,
-  Tooltip,
+  Tooltip
 } from 'recharts';
 
 interface IState {
-  data: { name: string, uv: number, pv: number, amt: number }[];
-  dataPie: { name: string, value: number }[];
+  data: { name: string; uv: number; pv: number; amt: number }[];
+  dataPie: { name: string; value: number }[];
   colors: string[];
 }
 
@@ -45,7 +45,7 @@ export default class DashboardIndexPage extends PureComponent<IProps, IState> {
         { name: 'Page D', uv: 2780, pv: 3908, amt: 2000 },
         { name: 'Page E', uv: 1890, pv: 4800, amt: 2181 },
         { name: 'Page F', uv: 2390, pv: 3800, amt: 2500 },
-        { name: 'Page G', uv: 3490, pv: 4300, amt: 2100 },
+        { name: 'Page G', uv: 3490, pv: 4300, amt: 2100 }
       ],
       dataPie: [
         { name: 'Group A', value: 400 },
@@ -95,9 +95,9 @@ export default class DashboardIndexPage extends PureComponent<IProps, IState> {
                   <PieChart>
                     <Pie dataKey={'value'} data={dataPie}>
                       <Tooltip />
-                      {data.map((entry, index) =>
+                      {data.map((entry, index) => (
                         <Cell key={entry.name} fill={colors[index % colors.length]} />
-                      )}
+                      ))}
                     </Pie>
                   </PieChart>
                 </ResponsiveContainer>
@@ -120,7 +120,6 @@ export default class DashboardIndexPage extends PureComponent<IProps, IState> {
               </CardContent>
             </Card>
           </Grid>
-
         </Grid>
 
         <Card>

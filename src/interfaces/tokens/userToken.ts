@@ -1,4 +1,4 @@
-export interface IUserToken {
+export default interface IUserToken {
   id: number;
   email: string;
   firstName: string;
@@ -7,5 +7,4 @@ export interface IUserToken {
   exp: number;
 
   fullName: string;
-  canAccess(...roles: string[]): boolean;
 }

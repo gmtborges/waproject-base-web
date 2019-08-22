@@ -4,6 +4,7 @@ import DialogActions from '@material-ui/core/DialogActions';
 import DialogContent from '@material-ui/core/DialogContent';
 import DialogContentText from '@material-ui/core/DialogContentText';
 import DialogTitle from '@material-ui/core/DialogTitle';
+import Slide from '@material-ui/core/Slide';
 import { WithStyles } from 'decorators/withStyles';
 import * as React from 'react';
 
@@ -32,14 +33,14 @@ export interface IAlertShowParams {
   confirmation?: boolean;
 }
 
-@WithStyles(theme => ({
+@WithStyles({
   root: {
     zIndex: 1600
   },
   content: {
     minWidth: '250px'
   }
-}))
+})
 export default class Alert extends React.Component<IProps, IState> {
   static Global = AlertGlobalProvider;
 
@@ -73,11 +74,11 @@ export default class Alert extends React.Component<IProps, IState> {
 
   handleOk = () => {
     this.props.onClose(true);
-  }
+  };
 
   handleCancel = () => {
     this.props.onClose(false);
-  }
+  };
 
   render() {
     const { opened, title, message, confirmation } = this.state;
@@ -87,21 +88,20 @@ export default class Alert extends React.Component<IProps, IState> {
       <Dialog
         open={opened}
         keepMounted
+        TransitionComponent={Transition}
         onClose={this.handleCancel}
         className={classes.root}
       >
         <DialogTitle>{title || (confirmation ? 'Confirmação' : 'Atenção')}</DialogTitle>
         <DialogContent>
-          <DialogContentText className={classes.content}>
-            {message}
-          </DialogContentText>
+          <DialogContentText className={classes.content}>{message}</DialogContentText>
         </DialogContent>
         <DialogActions>
-          {confirmation &&
+          {confirmation && (
             <Button onClick={this.handleCancel} autoFocus>
               Cancelar
             </Button>
-          }
+          )}
           <Button autoFocus={!confirmation} onClick={this.handleOk} color='primary'>
             OK
           </Button>
@@ -109,5 +109,8 @@ export default class Alert extends React.Component<IProps, IState> {
       </Dialog>
     );
   }
+}
 
+function Transition(props: any) {
+  return <Slide direction='up' {...props} />;
 }

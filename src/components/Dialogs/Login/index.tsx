@@ -1,10 +1,11 @@
 import Dialog from '@material-ui/core/Dialog';
-import logo from 'assets/images/logo-white.png';
+import Slide from '@material-ui/core/Slide';
+import logoWhite from 'assets/images/logo-white.png';
 import { WithStyles } from 'decorators/withStyles';
-import * as React from 'react';
 import { PureComponent } from 'react';
+import * as React from 'react';
 import SwipeableViews from 'react-swipeable-views';
-import * as rxjsOperators from 'rxjs-operators';
+import * as RxOp from 'rxjs-operators';
 import authService from 'services/auth';
 
 import LoginDialogForm from './Form';
@@ -59,35 +60,31 @@ export default class LoginDialog extends PureComponent<IProps, IState> {
   }
 
   componentDidMount() {
-    authService.shouldOpenLogin().pipe(
-      rxjsOperators.logError(),
-      rxjsOperators.bindComponent(this)
-    ).subscribe(opened => {
-      this.setState({ opened });
-    });
+    authService
+      .shouldOpenLogin()
+      .pipe(
+        RxOp.logError(),
+        RxOp.bindComponent(this)
+      )
+      .subscribe(opened => {
+        this.setState({ opened });
+      });
   }
 
   changeView = (view: number) => () => {
     this.setState({ currentView: view });
-  }
+  };
 
   render() {
     const { opened, currentView } = this.state;
     const { classes } = this.props;
 
     return (
-      <Dialog
-        fullScreen
-        disableBackdropClick
-        disableEscapeKeyDown
-        open={opened}
-      >
-
+      <Dialog fullScreen disableBackdropClick disableEscapeKeyDown open={opened} TransitionComponent={Transition}>
         <div className={classes.root}>
           <div className={classes.container}>
-
             <div className={classes.logo}>
-              <img src={logo} alt='logo' className={classes.logoImage} />
+              <img src={logoWhite} className={classes.logoImage} alt='logo' />
             </div>
 
             <SwipeableViews index={currentView}>
@@ -95,10 +92,7 @@ export default class LoginDialog extends PureComponent<IProps, IState> {
                 <LoginDialogForm onRecoveryAccess={this.changeView(1)} />
               </div>
               <div className={classes.viewContainer}>
-                <LoginDialogRecoveryAccess
-                  onCancel={this.changeView(0)}
-                  onComplete={this.changeView(0)}
-                />
+                <LoginDialogRecoveryAccess onCancel={this.changeView(0)} onComplete={this.changeView(0)} />
               </div>
             </SwipeableViews>
           </div>
@@ -106,4 +100,8 @@ export default class LoginDialog extends PureComponent<IProps, IState> {
       </Dialog>
     );
   }
+}
+
+function Transition(props: any) {
+  return <Slide direction='up' {...props} />;
 }

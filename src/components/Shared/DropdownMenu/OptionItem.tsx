@@ -1,15 +1,16 @@
 import ListItemIcon from '@material-ui/core/ListItemIcon';
 import ListItemText from '@material-ui/core/ListItemText';
 import MenuItem from '@material-ui/core/MenuItem';
-import { WithStyles } from 'decorators/withStyles';
-import React, { PureComponent } from 'react';
+import { IStyledProps, WithStyles } from 'decorators/withStyles';
+import DotsHorizontalIcon from 'mdi-react/DotsHorizontalIcon';
+import React, { PureComponent, SyntheticEvent } from 'react';
 
-import { IOption } from '.';
+import DropdownMenuContext, { IDropdownMenuContext } from './context';
 
-interface IProps {
-  option: IOption;
-  onClick: (option: IOption) => void;
-  classes?: any;
+interface IProps extends IStyledProps {
+  text: string;
+  icon?: typeof DotsHorizontalIcon;
+  handler: () => void;
 }
 
 @WithStyles({
@@ -18,26 +19,26 @@ interface IProps {
   }
 })
 export default class OptionItem extends PureComponent<IProps> {
+  static contextType = DropdownMenuContext;
+  context: IDropdownMenuContext;
 
-  onClick = () => {
-    this.props.onClick(this.props.option);
-  }
+  onClick = (event: SyntheticEvent) => {
+    event.preventDefault();
+    event.stopPropagation();
+    this.context(this.props.handler);
+  };
 
   render() {
-    const { option, classes } = this.props;
+    const { icon: Icon, text, classes } = this.props;
 
     return (
       <MenuItem onClick={this.onClick}>
-        {!!option.icon &&
+        {!!Icon && (
           <ListItemIcon>
-            <option.icon />
+            <Icon />
           </ListItemIcon>
-        }
-        <ListItemText
-          inset
-          primary={option.text}
-          className={option.icon ? classes.text : null}
-        />
+        )}
+        <ListItemText inset={!!Icon} primary={text} className={Icon ? classes.text : null} />
       </MenuItem>
     );
   }

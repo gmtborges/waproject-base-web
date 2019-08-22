@@ -1,29 +1,30 @@
+import IUser from 'interfaces/models/user';
+import IUserRole from 'interfaces/models/userRole';
 import { IPaginationParams, IPaginationResponse } from 'interfaces/pagination';
-import { IUser } from 'interfaces/user';
-import { IUserRole } from 'interfaces/userRole';
-import * as rxjs from 'rxjs';
-import RxOp, { ICacheResult } from 'rxjs-operators';
+import * as Rx from 'rxjs';
+import * as RxOp from 'rxjs-operators';
 
 import apiService, { ApiService } from './api';
 
 export class UserService {
-  constructor(private apiService: ApiService) { }
+  constructor(private apiService: ApiService) {}
 
-  public list(params: IPaginationParams): rxjs.Observable<IPaginationResponse<IUser>> {
+  public list(params: IPaginationParams): Rx.Observable<IPaginationResponse<IUser>> {
     return this.apiService.get('/user', params);
   }
 
-  public roles(refresh: boolean = false): rxjs.Observable<ICacheResult<IUserRole[]>> {
+  public roles(refresh: boolean = false): Rx.Observable<IUserRole[]> {
     return this.apiService.get('/user/roles').pipe(
-      RxOp.cache('user-service-roles', { refresh })
+      RxOp.cache('user-service-roles', { refresh }),
+      RxOp.map(({ data }) => data)
     );
   }
 
-  public save(model: IUser): rxjs.Observable<IUser> {
+  public save(model: IUser): Rx.Observable<IUser> {
     return this.apiService.post('/user', model);
   }
 
-  public delete(id: number): rxjs.Observable<void> {
+  public delete(id: number): Rx.Observable<void> {
     return this.apiService.delete(`/user/${id}`);
   }
 }

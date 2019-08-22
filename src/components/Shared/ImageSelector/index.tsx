@@ -4,6 +4,7 @@ import DialogActions from '@material-ui/core/DialogActions';
 import DialogContent from '@material-ui/core/DialogContent';
 import DialogTitle from '@material-ui/core/DialogTitle';
 import Grid from '@material-ui/core/Grid';
+import Slide from '@material-ui/core/Slide';
 import Typography from '@material-ui/core/Typography';
 import transparency from 'assets/images/transparency.png';
 import { WithStyles } from 'decorators/withStyles';
@@ -13,16 +14,21 @@ import { Cropper } from 'react-image-cropper';
 
 import ImageReader, { IImageReaderResult } from './ImageReader';
 
+export interface IImageSelectorResult {
+  filename: string;
+  base64: string;
+}
+
 interface IState {
   image?: IImageReaderResult;
-  dimentions?: { width: number, height: number };
+  dimentions?: { width: number; height: number };
 }
 
 interface IProps {
   opened: boolean;
   width: number;
   height: number;
-  onComplete: (image: string) => void;
+  onComplete: (result: IImageSelectorResult) => void;
   classes?: any;
 }
 
@@ -35,14 +41,12 @@ interface IProps {
   content: {
     overflow: 'auto',
     width: '95vw',
-    maxWidth: '100%',
     maxHeight: 'calc(100vh - 140px) !important'
   }
 })
 export default class ImageSelector extends PureComponent<IProps, IState> {
-  canvas: HTMLCanvasElement;
   resizeTimeout: NodeJS.Timer;
-  cropper: any;
+  cropper: React.RefObject<any> = React.createRef();
 
   constructor(props: IProps) {
     super(props);
@@ -53,31 +57,34 @@ export default class ImageSelector extends PureComponent<IProps, IState> {
     window.addEventListener('resize', this.reCalculateRegion);
   }
 
-  componentWillMount() {
+  componentWillUnmount() {
     window.removeEventListener('resize', this.reCalculateRegion);
   }
 
   onExited = () => {
     this.setState({ image: null });
-  }
+  };
 
   handleSave = async () => {
     const { width, height } = this.props;
 
-    const result = await imageCompress(this.cropper.crop(), width, height);
-    this.props.onComplete(result);
-  }
+    const result = await imageCompress(this.cropper.current.crop(), width, height);
+    this.props.onComplete({
+      filename: 'image.png',
+      base64: result
+    });
+  };
 
   handleCancel = () => {
     this.props.onComplete(null);
-  }
+  };
 
   setImage = (image: IImageReaderResult) => {
     this.setState({ image: null });
 
     const dimentions = this.calculateRegion(image.width, image.height);
     this.setState({ image, dimentions });
-  }
+  };
 
   reCalculateRegion = () => {
     clearTimeout(this.resizeTimeout);
@@ -95,7 +102,7 @@ export default class ImageSelector extends PureComponent<IProps, IState> {
         this.setState({ image, dimentions: newDimentions });
       });
     }, 500);
-  }
+  };
 
   calculateRegion = (width: number, height: number): IState['dimentions'] => {
     const dialogWidth = window.innerWidth - 90;
@@ -112,22 +119,22 @@ export default class ImageSelector extends PureComponent<IProps, IState> {
 
     const heightRatio = dialogHeight / height;
     return this.calculateRegion(width * heightRatio, dialogHeight);
-  }
+  };
 
   render() {
-    const { image, dimentions, } = this.state;
+    const { image, dimentions } = this.state;
     const { classes, opened, width, height } = this.props;
 
     return (
       <Fragment>
         <Dialog
-          open={opened}
+          open={opened || false}
           maxWidth={false}
           disableBackdropClick
           disableEscapeKeyDown
           onExited={this.onExited}
+          TransitionComponent={Transition}
         >
-
           <DialogTitle>
             <Grid container spacing={3} alignContent='center'>
               <Grid item xs={true}>
@@ -136,20 +143,17 @@ export default class ImageSelector extends PureComponent<IProps, IState> {
                   <strong>Tamanho sugerido:</strong> {height}px de altura {width}px de largura
                 </Typography>
               </Grid>
-              {image &&
+              {image && (
                 <Grid item xs={false}>
-                  <ImageReader onLoad={image => this.setImage(image)} />
+                  <ImageReader onLoad={this.setImage} />
                 </Grid>
-              }
+              )}
             </Grid>
           </DialogTitle>
           <DialogContent className={classes.content}>
+            {!image && <ImageReader onLoad={this.setImage} droppable />}
 
-            {!image &&
-              <ImageReader onLoad={image => this.setImage(image)} droppable />
-            }
-
-            {image &&
+            {image && (
               <div className={classes.imageContainer} style={dimentions}>
                 <Cropper
                   src={image.url}
@@ -157,18 +161,23 @@ export default class ImageSelector extends PureComponent<IProps, IState> {
                   width={width}
                   height={height}
                   allowNewSelection={false}
-                  ref={(ref: any) => this.cropper = ref}
+                  ref={this.cropper}
                 />
               </div>
-            }
-
+            )}
           </DialogContent>
           <DialogActions>
             <Button onClick={this.handleCancel}>Cancelar</Button>
-            <Button disabled={!image} color='secondary' onClick={this.handleSave}>OK</Button>
+            <Button disabled={!image} color='secondary' onClick={this.handleSave}>
+              OK
+            </Button>
           </DialogActions>
         </Dialog>
       </Fragment>
     );
   }
+}
+
+function Transition(props: any) {
+  return <Slide direction='up' {...props} />;
 }

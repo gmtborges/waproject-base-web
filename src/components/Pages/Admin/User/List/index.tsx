@@ -11,12 +11,12 @@ import { IStateList, ListComponent, TableCellSortable } from 'components/Abstrac
 import Toolbar from 'components/Layout/Toolbar';
 import FabButton from 'components/Shared/FabButton';
 import TableWrapper from 'components/Shared/TableWrapper';
+import IUser from 'interfaces/models/user';
 import { IPaginationParams } from 'interfaces/pagination';
-import { IUser } from 'interfaces/user';
 import AccountPlusIcon from 'mdi-react/AccountPlusIcon';
 import RefreshIcon from 'mdi-react/RefreshIcon';
 import React, { Fragment } from 'react';
-import rxjsOperators from 'rxjs-operators';
+import * as RxOp from 'rxjs-operators';
 import userService from 'services/user';
 
 import UserFormDialog from '../UserFormDialog';
@@ -28,6 +28,13 @@ interface IState extends IStateList<IUser> {
 }
 
 export default class UserListPage extends ListComponent<{}, IState> {
+  actions = [
+    {
+      icon: AccountPlusIcon,
+      onClick: () => this.handleCreate()
+    }
+  ];
+
   constructor(props: {}) {
     super(props, 'fullName');
   }
@@ -39,33 +46,34 @@ export default class UserListPage extends ListComponent<{}, IState> {
   loadData = (params: Partial<IPaginationParams> = {}) => {
     this.setState({ loading: true, error: null });
 
-    userService.list(this.mergeParams(params)).pipe(
-      rxjsOperators.logError(),
-      rxjsOperators.bindComponent(this)
-    ).subscribe(items => {
-      this.setPaginatedData(items);
-    }, error => this.setError(error));
-  }
+    userService
+      .list(this.mergeParams(params))
+      .pipe(
+        RxOp.logError(),
+        RxOp.bindComponent(this)
+      )
+      .subscribe(items => this.setPaginatedData(items), error => this.setError(error));
+  };
 
   handleCreate = () => {
     this.setState({ formOpened: true, current: null });
-  }
+  };
 
   handleEdit = (current: IUser) => {
     this.setState({ formOpened: true, current });
-  }
+  };
 
   formCallback = (user?: IUser) => {
     this.setState({ formOpened: false });
 
-    this.state.current ?
-      this.loadData() :
-      this.handleChangeTerm(user.email);
-  }
+    this.state.current ? this.loadData() : this.handleChangeTerm(user.email);
+  };
 
   formCancel = () => {
     this.setState({ formOpened: false });
-  }
+  };
+
+  handleRefresh = () => this.loadData();
 
   render() {
     const { items, formOpened, loading, current } = this.state;
@@ -75,16 +83,14 @@ export default class UserListPage extends ListComponent<{}, IState> {
         <Toolbar title='Usuários' />
 
         <Card>
-          <FabButton actions={[{
-            icon: AccountPlusIcon,
-            onClick: this.handleCreate
-          }]} />
+          <FabButton actions={this.actions} />
 
           <UserFormDialog
             opened={formOpened || false}
             user={current}
             onComplete={this.formCallback}
-            onCancel={this.formCancel} />
+            onCancel={this.formCancel}
+          />
 
           {this.renderLoader()}
 
@@ -107,7 +113,7 @@ export default class UserListPage extends ListComponent<{}, IState> {
                     Email
                   </TableCellSortable>
                   <TableCell>
-                    <IconButton disabled={loading} onClick={() => this.loadData()}>
+                    <IconButton disabled={loading} onClick={this.handleRefresh}>
                       <RefreshIcon />
                     </IconButton>
                   </TableCell>
@@ -115,20 +121,14 @@ export default class UserListPage extends ListComponent<{}, IState> {
               </TableHead>
               <TableBody>
                 {this.renderEmptyAndErrorMessages(3)}
-                {items.map(user =>
-                  <ListItem
-                    key={user.id}
-                    user={user}
-                    onEdit={this.handleEdit}
-                    onDeleteComplete={this.loadData}
-                  />
-                )}
+                {items.map(user => (
+                  <ListItem key={user.id} user={user} onEdit={this.handleEdit} onDeleteComplete={this.loadData} />
+                ))}
               </TableBody>
             </Table>
           </TableWrapper>
           {this.renderTablePagination()}
         </Card>
-
       </Fragment>
     );
   }

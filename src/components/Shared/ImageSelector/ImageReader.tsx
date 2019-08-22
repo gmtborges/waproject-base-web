@@ -1,11 +1,12 @@
 import Button from '@material-ui/core/Button';
 import CircularProgress from '@material-ui/core/CircularProgress';
 import IconMessage from 'components/Shared/IconMessage';
-import Snackbar from 'components/Shared/Snackbar';
 import { WithStyles } from 'decorators/withStyles';
 import FolderDownloadIcon from 'mdi-react/FolderDownloadIcon';
 import FolderOpenIcon from 'mdi-react/FolderOpenIcon';
 import React, { DragEvent, Fragment, PureComponent } from 'react';
+
+import Toast from '../Toast';
 
 export interface IImageReaderResult {
   url: string;
@@ -49,7 +50,7 @@ interface IProps {
   }
 })
 export default class ImageReader extends PureComponent<IProps, IState> {
-  inputRef: HTMLInputElement;
+  inputRef: React.RefObject<HTMLInputElement> = React.createRef();
   extensions = ['png', 'gif', 'jpeg', 'jpg', 'bmp'];
 
   constructor(props: IProps) {
@@ -58,17 +59,17 @@ export default class ImageReader extends PureComponent<IProps, IState> {
   }
 
   handleSelectImage = () => {
-    this.inputRef.click();
-  }
+    this.inputRef.current.click();
+  };
 
   onFileSelected = () => {
-    if (!this.inputRef.files.length) return;
+    if (!this.inputRef.current.files.length) return;
 
     this.setState({ loading: true });
 
-    this.loadFile(this.inputRef.files[0]);
-    this.inputRef.value = '';
-  }
+    this.loadFile(this.inputRef.current.files[0]);
+    this.inputRef.current.value = '';
+  };
 
   onDropFile = (event: DragEvent<any>) => {
     event.preventDefault();
@@ -77,7 +78,7 @@ export default class ImageReader extends PureComponent<IProps, IState> {
 
     if (this.state.loading) return;
     this.loadFile(event.dataTransfer.files[0]);
-  }
+  };
 
   onDragIn = (event: DragEvent<any>) => this.onDragInOut(true, event);
   onDragOut = (event: DragEvent<any>) => this.onDragInOut(false, event);
@@ -89,13 +90,13 @@ export default class ImageReader extends PureComponent<IProps, IState> {
 
     if (this.state.draggingOver === draggingOver) return;
     this.setState({ draggingOver });
-  }
+  };
 
   loadFile = (file: File) => {
     const regexp = new RegExp(`.(${this.extensions.join('|')})$`, 'gi');
 
     if (!regexp.test(file.name)) {
-      Snackbar.show(`Apenas imagens: ${this.extensions.join(', ')}`);
+      Toast.show(`Apenas imagens: ${this.extensions.join(', ')}`);
       return;
     }
 
@@ -103,12 +104,12 @@ export default class ImageReader extends PureComponent<IProps, IState> {
 
     reader.onload = (e: any) => this.getImageDimensions(e.target.result);
     reader.onerror = () => {
-      Snackbar.show('Não conseguimos carregar a imagem');
+      Toast.show('Não conseguimos carregar a imagem');
       this.setState({ loading: false });
     };
 
     reader.readAsDataURL(file);
-  }
+  };
 
   getImageDimensions = (url: string) => {
     const image = new Image();
@@ -121,19 +122,17 @@ export default class ImageReader extends PureComponent<IProps, IState> {
     };
 
     image.onerror = () => {
-      Snackbar.show('Não conseguimos carregar a imagem');
+      Toast.show('Não conseguimos carregar a imagem');
       this.setState({ loading: false });
     };
 
     image.src = url;
-  }
+  };
 
   render() {
     const { droppable } = this.props;
 
-    return droppable ?
-      this.renderArea() :
-      this.renderButton();
+    return droppable ? this.renderArea() : this.renderButton();
   }
 
   renderArea = () => {
@@ -147,24 +146,20 @@ export default class ImageReader extends PureComponent<IProps, IState> {
         onDragOver={this.onDragIn}
         onDragLeave={this.onDragOut}
       >
-        {loading &&
-          <CircularProgress color='secondary' size={50} className={classes.dropAreaProgress} />
-        }
+        {loading && <CircularProgress color='secondary' size={50} className={classes.dropAreaProgress} />}
 
-        {!loading &&
+        {!loading && (
           <Fragment>
             <div className={classes.dropAreaDraggingChildren}>
               <IconMessage icon={FolderDownloadIcon} message='Arraste e solte a imagem aqui ou' />
             </div>
 
-            <div className={draggingOver ? classes.dropAreaDraggingChildren : null}>
-              {this.renderButton()}
-            </div>
+            <div className={draggingOver ? classes.dropAreaDraggingChildren : null}>{this.renderButton()}</div>
           </Fragment>
-        }
+        )}
       </div>
     );
-  }
+  };
 
   renderButton = () => {
     const { loading } = this.state;
@@ -174,7 +169,7 @@ export default class ImageReader extends PureComponent<IProps, IState> {
       <Fragment>
         <input
           type='file'
-          ref={ref => this.inputRef = ref}
+          ref={this.inputRef}
           className='hide'
           onChange={this.onFileSelected}
           accept={`.${this.extensions.join(',.')}`}
@@ -186,5 +181,5 @@ export default class ImageReader extends PureComponent<IProps, IState> {
         </Button>
       </Fragment>
     );
-  }
+  };
 }
