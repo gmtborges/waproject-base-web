@@ -1,3 +1,4 @@
+import Button from '@material-ui/core/Button';
 import Card from '@material-ui/core/Card';
 import CardContent from '@material-ui/core/CardContent';
 import Grid from '@material-ui/core/Grid';
@@ -7,129 +8,119 @@ import TableBody from '@material-ui/core/TableBody';
 import TableCell from '@material-ui/core/TableCell';
 import TableHead from '@material-ui/core/TableHead';
 import TableRow from '@material-ui/core/TableRow';
-import { IStateList, ListComponent, TableCellSortable } from 'components/Abstract/List';
 import Toolbar from 'components/Layout/Toolbar';
-import FabButton from 'components/Shared/FabButton';
+import CardLoader from 'components/Shared/CardLoader';
+import EmptyAndErrorMessages from 'components/Shared/Pagination/EmptyAndErrorMessages';
+import SearchField from 'components/Shared/Pagination/SearchField';
+import TableCellSortable from 'components/Shared/Pagination/TableCellSortable';
+import TablePagination from 'components/Shared/Pagination/TablePagination';
 import TableWrapper from 'components/Shared/TableWrapper';
+import usePaginationObservable from 'hooks/usePagination';
 import IUser from 'interfaces/models/user';
-import { IPaginationParams } from 'interfaces/pagination';
-import AccountPlusIcon from 'mdi-react/AccountPlusIcon';
 import RefreshIcon from 'mdi-react/RefreshIcon';
-import React, { Fragment } from 'react';
-import * as RxOp from 'rxjs-operators';
+import React, { Fragment, memo, useCallback, useState } from 'react';
 import userService from 'services/user';
 
 import UserFormDialog from '../UserFormDialog';
 import ListItem from './ListItem';
 
-interface IState extends IStateList<IUser> {
-  current?: IUser;
-  formOpened?: boolean;
-}
+const UserListPage = memo(() => {
+  const [formOpened, setFormOpened] = useState(false);
+  const [current, setCurrent] = useState();
 
-export default class UserListPage extends ListComponent<{}, IState> {
-  actions = [
-    {
-      icon: AccountPlusIcon,
-      onClick: () => this.handleCreate()
-    }
-  ];
+  const [params, mergeParams, loading, data, error, , refresh] = usePaginationObservable(
+    params => userService.list(params),
+    { orderBy: 'fullName', orderDirection: 'asc' },
+    []
+  );
 
-  constructor(props: {}) {
-    super(props, 'fullName');
-  }
+  const handleCreate = useCallback(() => {
+    setCurrent(null);
+    setFormOpened(true);
+  }, []);
 
-  componentDidMount() {
-    this.loadData();
-  }
+  const handleEdit = useCallback((current: IUser) => {
+    setCurrent(current);
+    setFormOpened(true);
+  }, []);
 
-  loadData = (params: Partial<IPaginationParams> = {}) => {
-    this.setState({ loading: true, error: null });
+  const formCallback = useCallback(
+    (user?: IUser) => {
+      setFormOpened(false);
+      current ? refresh() : mergeParams({ term: user.email });
+    },
+    [current, mergeParams, refresh]
+  );
 
-    userService
-      .list(this.mergeParams(params))
-      .pipe(
-        RxOp.logError(),
-        RxOp.bindComponent(this)
-      )
-      .subscribe(items => this.setPaginatedData(items), error => this.setError(error));
-  };
+  const formCancel = useCallback(() => setFormOpened(false), []);
+  const handleRefresh = useCallback(() => refresh(), [refresh]);
 
-  handleCreate = () => {
-    this.setState({ formOpened: true, current: null });
-  };
+  const { total, results } = data || ({ total: 0, results: [] } as typeof data);
 
-  handleEdit = (current: IUser) => {
-    this.setState({ formOpened: true, current });
-  };
+  return (
+    <Fragment>
+      <Toolbar title='Usuários' />
 
-  formCallback = (user?: IUser) => {
-    this.setState({ formOpened: false });
+      <Card>
+        <UserFormDialog opened={formOpened} user={current} onComplete={formCallback} onCancel={formCancel} />
 
-    this.state.current ? this.loadData() : this.handleChangeTerm(user.email);
-  };
+        <CardLoader show={loading} />
 
-  formCancel = () => {
-    this.setState({ formOpened: false });
-  };
-
-  handleRefresh = () => this.loadData();
-
-  render() {
-    const { items, formOpened, loading, current } = this.state;
-
-    return (
-      <Fragment>
-        <Toolbar title='Usuários' />
-
-        <Card>
-          <FabButton actions={this.actions} />
-
-          <UserFormDialog
-            opened={formOpened || false}
-            user={current}
-            onComplete={this.formCallback}
-            onCancel={this.formCancel}
-          />
-
-          {this.renderLoader()}
-
-          <CardContent>
-            <Grid container>
-              <Grid item xs={12} sm={6} lg={4}>
-                {this.renderSearch()}
-              </Grid>
+        <CardContent>
+          <Grid container justify='space-between' alignItems='center' spacing={2}>
+            <Grid item xs={12} sm={6} lg={4}>
+              <SearchField paginationParams={params} onChange={mergeParams} />
             </Grid>
-          </CardContent>
 
-          <TableWrapper minWidth={500}>
-            <Table>
-              <TableHead>
-                <TableRow>
-                  <TableCellSortable {...this.sortableProps} column='fullName'>
-                    Nome
-                  </TableCellSortable>
-                  <TableCellSortable {...this.sortableProps} column='email'>
-                    Email
-                  </TableCellSortable>
-                  <TableCell>
-                    <IconButton disabled={loading} onClick={this.handleRefresh}>
-                      <RefreshIcon />
-                    </IconButton>
-                  </TableCell>
-                </TableRow>
-              </TableHead>
-              <TableBody>
-                {this.renderEmptyAndErrorMessages(3)}
-                {items.map(user => (
-                  <ListItem key={user.id} user={user} onEdit={this.handleEdit} onDeleteComplete={this.loadData} />
-                ))}
-              </TableBody>
-            </Table>
-          </TableWrapper>
-          {this.renderTablePagination()}
-        </Card>
-      </Fragment>
-    );
-  }
-}
+            <Grid item xs={12} sm={'auto'}>
+              <Button fullWidth variant='contained' color='primary' onClick={handleCreate}>
+                Adicionar
+              </Button>
+            </Grid>
+          </Grid>
+        </CardContent>
+
+        <TableWrapper minWidth={500}>
+          <Table>
+            <TableHead>
+              <TableRow>
+                <TableCellSortable
+                  paginationParams={params}
+                  disabled={loading}
+                  onChange={mergeParams}
+                  column='fullName'
+                >
+                  Nome
+                </TableCellSortable>
+                <TableCellSortable paginationParams={params} disabled={loading} onChange={mergeParams} column='email'>
+                  Email
+                </TableCellSortable>
+                <TableCell>
+                  <IconButton disabled={loading} onClick={handleRefresh}>
+                    <RefreshIcon />
+                  </IconButton>
+                </TableCell>
+              </TableRow>
+            </TableHead>
+            <TableBody>
+              <EmptyAndErrorMessages
+                colSpan={3}
+                error={error}
+                loading={loading}
+                hasData={results.length > 0}
+                onTryAgain={refresh}
+              />
+              {results.map(user => (
+                <ListItem key={user.id} user={user} onEdit={handleEdit} onDeleteComplete={refresh} />
+              ))}
+            </TableBody>
+          </Table>
+        </TableWrapper>
+
+        <TablePagination total={total} disabled={loading} paginationParams={params} onChange={mergeParams} />
+      </Card>
+    </Fragment>
+  );
+});
+
+export default UserListPage;

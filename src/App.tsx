@@ -10,34 +10,27 @@ import Alert from 'components/Shared/Alert';
 import Loader from 'components/Shared/Loader';
 import Toast from 'components/Shared/Toast';
 import fieldConfig from 'fieldConfig';
-import React from 'react';
-import { setup } from 'rxjs-operators';
+import React, { memo, useEffect } from 'react';
+import { setupServices } from 'services';
 
-class App extends React.PureComponent {
-  loader = React.createRef<Loader>();
-  formFieldConfig = fieldConfig;
+const App = memo(() => {
+  useEffect(() => setupServices(), []);
 
-  componentDidMount() {
-    setup(this.loader.current);
-  }
+  return (
+    <MuiThemeProvider theme={theme}>
+      <FormFieldsContext config={fieldConfig}>
+        <CssBaseline />
+        <Dialogs />
 
-  render() {
-    return (
-      <MuiThemeProvider theme={theme}>
-        <FormFieldsContext config={this.formFieldConfig}>
-          <CssBaseline />
-          <Dialogs />
+        <Loader />
 
-          <Loader innerRef={this.loader} />
+        <Alert.Global />
+        <Toast.Global />
 
-          <Alert.Global />
-          <Toast.Global />
-
-          <Pages />
-        </FormFieldsContext>
-      </MuiThemeProvider>
-    );
-  }
-}
+        <Pages />
+      </FormFieldsContext>
+    </MuiThemeProvider>
+  );
+});
 
 export default App;
