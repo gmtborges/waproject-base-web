@@ -40,6 +40,5 @@
   },
   "typescript.tsdk": "node_modules/typescript/lib",
   "typescriptHero.imports.organizeOnSave": true,
-  "typescriptHero.imports.ignoredFromRemoval": [],
   "typescriptHero.imports.multiLineTrailingComma": false
 }

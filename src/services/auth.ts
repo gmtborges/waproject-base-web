@@ -1,11 +1,11 @@
+import { logError } from 'helpers/rxjs-operators/logError';
 import IUserToken from 'interfaces/tokens/userToken';
 import * as Rx from 'rxjs';
+import { catchError, distinctUntilChanged, map, shareReplay, switchMap } from 'rxjs/operators';
 
 import apiService, { ApiService } from './api';
 import cacheService from './cache';
 import tokenService, { TokenService } from './token';
-import { catchError, shareReplay, distinctUntilChanged, switchMap, map, tap } from 'rxjs/operators';
-import { logError } from 'helpers/rxjs-operators/logError';
 
 export class AuthService {
   private user$: Rx.Observable<IUserToken>;
@@ -48,7 +48,10 @@ export class AuthService {
   }
 
   public login(email: string, password: string): Rx.Observable<void> {
-    return this.api.post('/auth/login', { email, password }).pipe(tap(() => this.openLogin$.next(false)));
+    return this.api.post('/auth/login', { email, password }).pipe(
+      switchMap(accessToken => this.tokenService.setToken(accessToken)),
+      map(() => this.openLogin$.next(false))
+    );
   }
 
   public logout(): Rx.Observable<void> {

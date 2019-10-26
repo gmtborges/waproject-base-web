@@ -152,7 +152,7 @@ const UserFormDialog = memo((props: IProps) => {
                     helperText={role.description}
                     checked={role.selected}
                     label={role.name}
-                    onChange={setModelProp('', (m, v) => (role.selected = v))}
+                    onChange={setModelProp(role.name, (m, v) => (role.selected = v))}
                   />
                 </div>
               ))}
