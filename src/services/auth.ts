@@ -1,10 +1,10 @@
+import { cacheClean } from 'helpers/rxjs-operators/cache';
 import { logError } from 'helpers/rxjs-operators/logError';
 import IUserToken from 'interfaces/tokens/userToken';
 import * as Rx from 'rxjs';
 import { catchError, distinctUntilChanged, map, shareReplay, switchMap } from 'rxjs/operators';
 
 import apiService, { ApiService } from './api';
-import cacheService from './cache';
 import tokenService, { TokenService } from './token';
 
 export class AuthService {
@@ -33,7 +33,7 @@ export class AuthService {
     this.getUser()
       .pipe(
         distinctUntilChanged((a, b) => (a || ({} as IUserToken)).id !== (b || ({} as IUserToken)).id),
-        switchMap(() => cacheService.clear()),
+        cacheClean(),
         logError()
       )
       .subscribe();
