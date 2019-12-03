@@ -24,6 +24,7 @@ export class AuthService {
         if (!user) return null;
 
         user.fullName = `${user.firstName} ${user.lastName}`;
+        user.roles = user.roles || [];
         return user;
       }),
       catchError(() => Rx.of(null)),

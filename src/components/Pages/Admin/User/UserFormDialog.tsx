@@ -60,7 +60,10 @@ const UserFormDialog = memo((props: IProps) => {
           selected: !props.user ? false : props.user.roles.includes(r.role)
         }));
       }),
-      tap(() => setLoading(false), () => setLoading(false)),
+      tap(
+        () => setLoading(false),
+        () => setLoading(false)
+      ),
       logError()
     );
   }, [props.opened, props.user]);

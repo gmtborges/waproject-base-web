@@ -1,7 +1,7 @@
 import * as Sentry from '@sentry/browser';
 
 import IUserToken from '../interfaces/tokens/userToken';
-import { ENV, SENTRY_KEY } from '../settings';
+import { ENV, IS_DEVELOPMENT, SENTRY_KEY } from '../settings';
 
 export class LogService {
   constructor(sentryKey: string) {
@@ -42,6 +42,10 @@ export class LogService {
 
     if (typeof err === 'string') {
       err = new Error(err);
+    }
+
+    if (IS_DEVELOPMENT) {
+      console.error(err);
     }
 
     Sentry.withScope(() => {

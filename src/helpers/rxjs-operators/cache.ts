@@ -25,7 +25,9 @@ export default function cache<T>(
   }
 
   return (source: Observable<T>) =>
-    source.lift(new CacheOperator<T>(key, { refresh: false, persist: true, expirationMinutes: 5, ...options }));
+    source.lift(
+      new CacheOperator<T>(key, { refresh: false, persist: true, expirationMinutes: 5, ...options })
+    );
 }
 
 export function cacheClean<T>(key?: string) {

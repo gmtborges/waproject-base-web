@@ -10,12 +10,9 @@ import Alert from 'components/Shared/Alert';
 import Loader from 'components/Shared/Loader';
 import Toast from 'components/Shared/Toast';
 import fieldConfig from 'fieldConfig';
-import React, { memo, useEffect } from 'react';
-import { setupServices } from 'services';
+import React, { memo } from 'react';
 
 const App = memo(() => {
-  useEffect(() => setupServices(), []);
-
   return (
     <MuiThemeProvider theme={theme}>
       <FormFieldsContext config={fieldConfig}>
