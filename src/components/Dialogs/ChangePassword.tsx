@@ -11,7 +11,7 @@ import FieldText from '@react-form-fields/material-ui/components/Text';
 import Toast from 'components/Shared/Toast';
 import { logError } from 'helpers/rxjs-operators/logError';
 import useModel from 'hooks/useModel';
-import React, { memo, useCallback, useState } from 'react';
+import React, { forwardRef, memo, useCallback, useState } from 'react';
 import { useCallbackObservable, useObservable } from 'react-use-observable';
 import { of } from 'rxjs';
 import { filter, switchMap, tap } from 'rxjs/operators';
@@ -117,8 +117,10 @@ const ChangePasswordDialog = memo((props: {}) => {
   );
 });
 
-function Transition(props: any) {
-  return <Slide direction='up' {...props} />;
-}
+const Transition = memo(
+  forwardRef((props: any, ref: any) => {
+    return <Slide direction='up' {...props} ref={ref} />;
+  })
+);
 
 export default ChangePasswordDialog;
