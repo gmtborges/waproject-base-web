@@ -94,7 +94,7 @@ class CacheOperator<T> implements Operator<T, T> {
 }
 
 class MemoryCache implements ICacheService {
-  private data: { [key: string]: any };
+  private data: { [key: string]: any } = {};
 
   getItem<T>(key: string): T {
     return this.data[key];

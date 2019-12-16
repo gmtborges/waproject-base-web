@@ -49,7 +49,7 @@ export class LogService {
     }
 
     Sentry.withScope(() => {
-      Sentry.setExtras({ extra: err.extraData });
+      Sentry.setExtras({ extra: err.extraData || {} });
       Sentry.captureException(err);
     });
   }
