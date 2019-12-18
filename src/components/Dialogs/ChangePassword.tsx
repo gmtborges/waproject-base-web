@@ -41,25 +41,28 @@ const ChangePasswordDialog = memo((props: {}) => {
 
   const onCancel = useCallback(() => authService.closeChangePassword(), []);
 
-  const [onSubmit] = useCallbackObservable((isValid: boolean) => {
-    return of(isValid).pipe(
-      filter(isValid => isValid),
-      tap(() => setLoading(true)),
-      switchMap(() => authService.changePassword(model.currentPassword, model.newPassword)),
-      tap(
-        () => {
-          setLoading(false);
-          Toast.show('Senha alterada com sucesso!');
-          authService.closeChangePassword();
-        },
-        err => {
-          setLoading(false);
-          Toast.error(err);
-        }
-      ),
-      logError()
-    );
-  }, []);
+  const [onSubmit] = useCallbackObservable(
+    (isValid: boolean) => {
+      return of(isValid).pipe(
+        filter(isValid => isValid),
+        tap(() => setLoading(true)),
+        switchMap(() => authService.changePassword(model.currentPassword, model.newPassword)),
+        tap(
+          () => {
+            setLoading(false);
+            Toast.show('Senha alterada com sucesso!');
+            authService.closeChangePassword();
+          },
+          err => {
+            setLoading(false);
+            Toast.error(err);
+          }
+        ),
+        logError()
+      );
+    },
+    [model]
+  );
 
   return (
     <Dialog

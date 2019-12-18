@@ -89,7 +89,7 @@ const UserFormDialog = memo((props: IProps) => {
         logError()
       );
     },
-    [model, roles]
+    [model]
   );
 
   return (
