@@ -37,7 +37,7 @@ type AlertComponent = MemoExoticComponent<ComponentType<IProps>> & {
 
 const useStyle = makeStyles({
   root: {
-    zIndex: 1600
+    zIndex: '1600 !important' as any
   },
   content: {
     minWidth: '250px'
