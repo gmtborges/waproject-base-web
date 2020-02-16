@@ -5,12 +5,14 @@ import { enRoles } from 'interfaces/models/user';
 import AccountMultipleIcon from 'mdi-react/AccountMultipleIcon';
 import StarIcon from 'mdi-react/StarIcon';
 import ViewDashboardIcon from 'mdi-react/ViewDashboardIcon';
+import InboxMultipleIcon from 'mdi-react/InboxMultipleIcon';
 import React, { memo, useCallback, useRef, useState } from 'react';
 import { Redirect, Route, Switch } from 'react-router-dom';
 
 import DashboardIndexPage from './Dashboard';
 import SamplePage from './Sample';
 import UserIndexPage from './User';
+import OrderIndexPage from './Order';
 
 export const ScrollTopContext = React.createContext<Function>(() => {});
 
@@ -45,6 +47,12 @@ const AdminPage = memo((props: {}) => {
       role: enRoles.admin,
       icon: AccountMultipleIcon
     },
+    {
+      path: '/pedidos',
+      display: 'Pedidos',
+      role: enRoles.admin,
+      icon: InboxMultipleIcon
+    },
     { path: '/exemplos', display: 'Exemplos', icon: StarIcon }
   ]);
 
@@ -59,6 +67,7 @@ const AdminPage = memo((props: {}) => {
             <Switch>
               <Route path='/exemplos' component={SamplePage} />
               <PermissionRoute path='/usuarios' role={enRoles.sysAdmin} component={UserIndexPage} />
+              <PermissionRoute path='/pedidos' role={enRoles.sysAdmin} component={OrderIndexPage} />
               <Route path='/' component={DashboardIndexPage} />
               <Route render={renderRedirect} />
             </Switch>
